@@ -4,6 +4,7 @@ export default class PreLoader extends Phaser.Scene {
   constructor() {
     super("preloader");
   }
+
   preload() {
     this.load.image(
       "player_one",
