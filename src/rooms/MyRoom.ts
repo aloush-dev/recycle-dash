@@ -3,27 +3,33 @@ import { MyRoomState, Player } from "./schema/MyRoomState";
 
 export class MyRoom extends Room<MyRoomState> {
   maxClients = 4;
+  update: any; // NOT GOOD PLS FIX
 
   onCreate(options: any) {
     this.setState(new MyRoomState());
 
-    this.onMessage(0, (client, data) => {
-      // get reference to the player who sent the message
+    this.onMessage(0, (client, input) => {
       const player = this.state.players.get(client.sessionId);
       const velocity = 2;
 
-      if (data.left) {
+      player.inputQueue.push(input);
+
+      if (input.left) {
         player.x -= velocity;
-      } else if (data.right) {
+      } else if (input.right) {
         player.x += velocity;
       }
 
-      if (data.up) {
+      if (input.up) {
         player.y -= velocity;
-      } else if (data.down) {
+      } else if (input.down) {
         player.y += velocity;
       }
     });
+
+    // this.setSimulationInterval((deltaTime) => {
+    //   this.update(deltaTime);
+    // });
   }
 
   onJoin(client: Client, options: any) {
