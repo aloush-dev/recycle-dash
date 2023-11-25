@@ -1,5 +1,5 @@
-import Phaser from 'phaser';
-import { Client, Room } from 'colyseus.js';
+import Phaser from "phaser";
+import { Client, Room } from "colyseus.js";
 
 type Player = {
   x: number;
@@ -7,13 +7,21 @@ type Player = {
   inputQueue: any;
   onChange: any; //MUST fix this cannot put an any type in front of Johnny and Haz
 };
+type TrashCan = {
+  x: number;
+  y: number;
+  imgUrl: string;
+  type: string;
+};
 export default class Game extends Phaser.Scene {
   state: any;
   constructor() {
-    super('game');
+    super("game");
   }
 
-  currentPlayer!: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+  currentPlayer!: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & {
+    playerNumber?: number;
+  };
   remoteRef!: Phaser.GameObjects.Rectangle;
 
   inputPayload = {
@@ -29,31 +37,57 @@ export default class Game extends Phaser.Scene {
   init() {
     this.cursorKeys = this.input.keyboard!.createCursorKeys();
   }
-  client = new Client('ws://localhost:2567');
+  client = new Client("ws://localhost:2567");
   room!: Room;
 
   playerEntities: { [sessionId: string]: any } = {};
+  trashCanEntities: { [key: string]: any } = {};
+  private createCan(trashCanItem: any, key: string) {
+    const rectWidth = 32;
+    const rectHeight = 32;
+
+    const graphics = this.add.graphics({ fillStyle: { alpha: 0 } });
+    const rect = new Phaser.Geom.Rectangle(
+      trashCanItem.x,
+      trashCanItem.y,
+      rectWidth,
+      rectHeight
+    );
+    graphics.fillRectShape(rect);
+
+    const imageX = trashCanItem.x + rectWidth / 2;
+    const imageY = trashCanItem.y + rectHeight / 2;
+
+    const image = this.add.image(imageX, imageY, trashCanItem.type);
+
+    this.trashCanEntities[key] = graphics;
+  }
 
   async create() {
-    console.log('Joining Room');
+    console.log("Joining Room");
     try {
-      this.room = await this.client.joinOrCreate('my_room');
+      this.room = await this.client.joinOrCreate("my_room");
+      console.log("Initial trash cans state:", this.room.state.trashCans);
+      this.room.state.trashCans.onAdd((trashCan: TrashCan, key: string) => {
+        this.createCan(trashCan, key);
+      });
 
       this.room.state.players.onAdd(
         (player: Player, sessionId: string | number) => {
           console.log(
-            'A player has joined! Their unique session id is',
+            "A player has joined! Their unique session id is",
             sessionId
           );
           console.log(
-            'Players connected: ',
+            "Players connected: ",
             Object.keys(this.playerEntities).length + 1
           );
+
           const playerNum = Object.keys(this.playerEntities).length;
           const sprites = [0, 12, 24, 36];
 
           const entity = this.physics.add
-            .sprite(player.x, player.y, 'playerSheet', sprites[playerNum])
+            .sprite(player.x, player.y, "playerSheet", sprites[playerNum])
             .setOffset(player.x, player.y);
           this.playerEntities[sessionId] = entity;
           this.playerEntities[sessionId].playerNumber = playerNum;
@@ -76,17 +110,18 @@ export default class Game extends Phaser.Scene {
             // all remote players are here!
             // (same as before, we are going to interpolate remote players)
             player.onChange(() => {
-              entity.setData('serverX', player.x);
-              entity.setData('serverY', player.y);
+              entity.setData("serverX", player.x);
+              entity.setData("serverY", player.y);
             });
           }
 
           player.onChange(() => {
-            entity.setData('serverX', player.x);
-            entity.setData('serverY', player.y);
+            entity.setData("serverX", player.x);
+            entity.setData("serverY", player.y);
           });
         }
       );
+
       this.room.state.players.onRemove(
         (player: { x: number; y: number }, sessionId: string | number) => {
           const entity = this.playerEntities[sessionId];
@@ -107,7 +142,7 @@ export default class Game extends Phaser.Scene {
     if (!this.currentPlayer) {
       return;
     }
-    const animNum: number = this.currentPlayer.playerNumber;
+    const animNum: number = this.currentPlayer.playerNumber || 0;
 
     const velocity = 2;
 
@@ -138,8 +173,8 @@ export default class Game extends Phaser.Scene {
         const currentAnimKey = this.currentPlayer.anims.currentAnim?.key;
 
         // Check if the player is not already playing an idle animation
-        if (currentAnimKey && !currentAnimKey.includes('idle')) {
-          const parts = currentAnimKey.split('-');
+        if (currentAnimKey && !currentAnimKey.includes("idle")) {
+          const parts = currentAnimKey.split("-");
           const direction = parts[0];
           this.currentPlayer.play(`${direction}-idle-${animNum}`);
         }
