@@ -1,8 +1,11 @@
-export abstract class TrashCan {
+import { Schema } from "@colyseus/schema";
+
+export abstract class TrashCan extends Schema {
   x: number;
   y: number;
   abstract type: string;
   constructor(x: number, y: number) {
+    super();
     this.x = x;
     this.y = y;
   }

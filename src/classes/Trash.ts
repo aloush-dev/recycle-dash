@@ -1,4 +1,5 @@
-export abstract class Trash {
+import { Schema } from "@colyseus/schema";
+export abstract class Trash extends Schema {
   x: number;
   y: number;
   pickedUp: boolean;
@@ -7,6 +8,7 @@ export abstract class Trash {
   abstract points: number;
   abstract imgUrl: string;
   constructor(x: number, y: number) {
+    super();
     this.x = x;
     this.y = y;
     this.pickedUp = false;
