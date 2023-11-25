@@ -16,4 +16,9 @@ h1 {
   font-size: 3rem;
 }
 
+#app {
+  justify-content: center;
+  display: flex;
+}
+
 /*# sourceMappingURL=index.0243a6ab.css.map */

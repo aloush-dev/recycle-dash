@@ -1,40 +1,40 @@
-import Phaser from "phaser";
+import Phaser from 'phaser';
 
 export default class PreLoader extends Phaser.Scene {
   constructor() {
-    super("preloader");
+    super('preloader');
   }
 
   preload() {
     this.load.spritesheet(
-      "playerSheet",
-      "https://i.ibb.co/rbjPCCj/Characters-V3-Colour-3.png",
+      'playerSheet',
+      'https://i.ibb.co/rbjPCCj/Characters-V3-Colour-3.png',
       { frameWidth: 80, frameHeight: 80 }
     );
   }
   create() {
     this.anims.create({
-      key: "down-idle-0",
-      frames: [{ key: "playerSheet", frame: 156 }],
+      key: 'down-idle-0',
+      frames: [{ key: 'playerSheet', frame: 156 }],
     });
     this.anims.create({
-      key: "up-idle-0",
-      frames: [{ key: "playerSheet", frame: 157 }],
-    });
-
-    this.anims.create({
-      key: "left-idle-0",
-      frames: [{ key: "playerSheet", frame: 159 }],
+      key: 'up-idle-0',
+      frames: [{ key: 'playerSheet', frame: 157 }],
     });
 
     this.anims.create({
-      key: "right-idle-0",
-      frames: [{ key: "playerSheet", frame: 158 }],
+      key: 'left-idle-0',
+      frames: [{ key: 'playerSheet', frame: 159 }],
     });
 
     this.anims.create({
-      key: "down-walk-0",
-      frames: this.anims.generateFrameNumbers("playerSheet", {
+      key: 'right-idle-0',
+      frames: [{ key: 'playerSheet', frame: 158 }],
+    });
+
+    this.anims.create({
+      key: 'down-walk-0',
+      frames: this.anims.generateFrameNumbers('playerSheet', {
         start: 160,
         end: 161,
       }),
@@ -43,8 +43,8 @@ export default class PreLoader extends Phaser.Scene {
     });
 
     this.anims.create({
-      key: "up-walk-0",
-      frames: this.anims.generateFrameNumbers("playerSheet", {
+      key: 'up-walk-0',
+      frames: this.anims.generateFrameNumbers('playerSheet', {
         start: 162,
         end: 163,
       }),
@@ -53,8 +53,8 @@ export default class PreLoader extends Phaser.Scene {
     });
 
     this.anims.create({
-      key: "left-walk-0",
-      frames: this.anims.generateFrameNumbers("playerSheet", {
+      key: 'left-walk-0',
+      frames: this.anims.generateFrameNumbers('playerSheet', {
         start: 166,
         end: 167,
       }),
@@ -63,14 +63,15 @@ export default class PreLoader extends Phaser.Scene {
     });
 
     this.anims.create({
-      key: "right-walk-0",
-      frames: this.anims.generateFrameNumbers("playerSheet", {
+      key: 'right-walk-0',
+      frames: this.anims.generateFrameNumbers('playerSheet', {
         start: 164,
         end: 165,
       }),
       frameRate: 8,
       repeat: -1,
     });
-    this.scene.start("game");
+
+    this.scene.start('welcome');
   }
 }
