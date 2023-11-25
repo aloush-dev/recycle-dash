@@ -4,6 +4,7 @@ import { Client, Room } from "colyseus.js";
 type Player = {
   x: number;
   y: number;
+  animation: string | null;
   inputQueue: any;
   onChange: any; //MUST fix this cannot put an any type in front of Johnny and Haz
 };
@@ -12,6 +13,14 @@ type TrashCan = {
   y: number;
   imgUrl: string;
   type: string;
+};
+
+type InputPayloadType = {
+  left: boolean;
+  right: boolean;
+  up: boolean;
+  down: boolean;
+  animation: string | null;
 };
 export default class Game extends Phaser.Scene {
   state: any;
@@ -24,22 +33,22 @@ export default class Game extends Phaser.Scene {
   };
   remoteRef!: Phaser.GameObjects.Rectangle;
 
-  inputPayload = {
+  inputPayload: InputPayloadType = {
     left: false,
     right: false,
     up: false,
     down: false,
+    animation: "down-idle-0",
   };
 
-  /** @type {Phaser.Types.Input.Keyboard.CursorKeys} */
   cursorKeys!: Phaser.Types.Input.Keyboard.CursorKeys;
+  room!: Room;
 
   init() {
     this.cursorKeys = this.input.keyboard!.createCursorKeys();
   }
-  client = new Client("ws://localhost:2567");
-  room!: Room;
 
+  client = new Client("ws://localhost:2567");
   playerEntities: { [sessionId: string]: any } = {};
   trashCanEntities: { [key: string]: any } = {};
   private createCan(trashCanItem: any, key: string) {
@@ -108,7 +117,7 @@ export default class Game extends Phaser.Scene {
             });
           } else {
             // all remote players are here!
-            // (same as before, we are going to interpolate remote players)
+
             player.onChange(() => {
               entity.setData("serverX", player.x);
               entity.setData("serverY", player.y);
@@ -118,28 +127,29 @@ export default class Game extends Phaser.Scene {
           player.onChange(() => {
             entity.setData("serverX", player.x);
             entity.setData("serverY", player.y);
+            entity.setData("animation", player.animation);
           });
         }
       );
 
-      this.room.state.players.onRemove(
-        (player: { x: number; y: number }, sessionId: string | number) => {
-          const entity = this.playerEntities[sessionId];
-          if (entity) {
-            entity.destroy();
-            delete this.playerEntities[sessionId];
-          }
-          console.log(`Player at session ${sessionId} has left the game`);
+      this.room.state.players.onRemove((sessionId: string | number) => {
+        const entity = this.playerEntities[sessionId];
+        if (entity) {
+          entity.destroy();
+          delete this.playerEntities[sessionId];
         }
-      );
+        console.log(`Player at session ${sessionId} has left the game`);
+      });
     } catch (e) {
       console.error(e);
     }
   }
-  updatePlayer() {}
 
   update(time: number, delta: number): void {
     if (!this.currentPlayer) {
+      return;
+    }
+    if (!this.room) {
       return;
     }
     const animNum: number = this.currentPlayer.playerNumber || 0;
@@ -150,22 +160,23 @@ export default class Game extends Phaser.Scene {
     this.inputPayload.right = this.cursorKeys.right.isDown;
     this.inputPayload.up = this.cursorKeys.up.isDown;
     this.inputPayload.down = this.cursorKeys.down.isDown;
-    this.room.send(0, this.inputPayload);
+    this.inputPayload.animation =
+      this.currentPlayer.anims.currentAnim?.key || null;
 
     if (this.inputPayload.left) {
-      this.currentPlayer.x -= velocity;
       this.currentPlayer.play(`left-walk-${animNum}`, true);
+      this.currentPlayer.x -= velocity;
     } else if (this.inputPayload.right) {
-      this.currentPlayer.x += velocity;
       this.currentPlayer.play(`right-walk-${animNum}`, true);
+      this.currentPlayer.x += velocity;
     }
 
     if (this.inputPayload.up) {
-      this.currentPlayer.y -= velocity;
       this.currentPlayer.play(`up-walk-${animNum}`, true);
+      this.currentPlayer.y -= velocity;
     } else if (this.inputPayload.down) {
-      this.currentPlayer.y += velocity;
       this.currentPlayer.play(`down-walk-${animNum}`, true);
+      this.currentPlayer.y += velocity;
     } else {
       this.currentPlayer.setVelocity(0, 0);
 
@@ -180,10 +191,7 @@ export default class Game extends Phaser.Scene {
         }
       }
     }
-
-    if (!this.room) {
-      return;
-    }
+    this.room.send("updatePlayer", this.inputPayload);
 
     for (let sessionId in this.playerEntities) {
       if (sessionId === this.room.sessionId) {
@@ -192,10 +200,14 @@ export default class Game extends Phaser.Scene {
 
       const entity = this.playerEntities[sessionId];
 
-      const { serverX, serverY } = entity.data.values;
-
-      entity.x = Phaser.Math.Linear(entity.x, serverX, 0.4);
-      entity.y = Phaser.Math.Linear(entity.y, serverY, 0.4);
+      if (entity) {
+        const { serverX, serverY, animation } = entity.data.values;
+        entity.x = Phaser.Math.Linear(entity.x, serverX, 0.4);
+        entity.y = Phaser.Math.Linear(entity.y, serverY, 0.4);
+        if (animation) {
+          entity.play(animation, true);
+        }
+      }
     }
   }
 }

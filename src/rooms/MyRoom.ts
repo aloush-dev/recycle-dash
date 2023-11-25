@@ -33,10 +33,11 @@ export class MyRoom extends Room<MyRoomState> {
       new NonRecyclable(locations[3].x, locations[3].y)
     );
 
-    this.onMessage(0, (client, input) => {
+    this.onMessage("updatePlayer", (client, input) => {
       const player = this.state.players.get(client.sessionId);
       const velocity = 2;
-      player.inputQueue.push(input);
+
+      player.animation = input.animation;
       if (input.left) {
         player.x -= velocity;
       } else if (input.right) {
@@ -48,9 +49,6 @@ export class MyRoom extends Room<MyRoomState> {
         player.y += velocity;
       }
     });
-    // this.setSimulationInterval((deltaTime) => {
-    //   this.update(deltaTime);
-    // });
   }
 
   onJoin(client: Client, options: any) {
