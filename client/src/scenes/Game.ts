@@ -1,5 +1,5 @@
-import Phaser from "phaser";
-import { Client, Room } from "colyseus.js";
+import Phaser from 'phaser';
+import { Client, Room } from 'colyseus.js';
 
 type Player = {
   x: number;
@@ -10,7 +10,7 @@ type Player = {
 export default class Game extends Phaser.Scene {
   state: any;
   constructor() {
-    super("game");
+    super('game');
   }
 
   currentPlayer!: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
@@ -29,34 +29,34 @@ export default class Game extends Phaser.Scene {
   init() {
     this.cursorKeys = this.input.keyboard!.createCursorKeys();
   }
-  client = new Client("ws://localhost:2567");
+  client = new Client('ws://localhost:2567');
   room!: Room;
 
   playerEntities: { [sessionId: string]: any } = {};
 
   async create() {
-    console.log("Joining Room");
+    console.log('Joining Room');
     try {
-      this.room = await this.client.joinOrCreate("my_room");
+      this.room = await this.client.joinOrCreate('my_room');
+
       this.room.state.players.onAdd(
         (player: Player, sessionId: string | number) => {
           console.log(
-            "A player has joined! Their unique session id is",
+            'A player has joined! Their unique session id is',
             sessionId
           );
           console.log(
-            "Players connected: ",
+            'Players connected: ',
             Object.keys(this.playerEntities).length + 1
           );
           const playerNum = Object.keys(this.playerEntities).length;
-          const sprites = [156, 24, 48, 96];
-          const { width, height } = this.scale;
+          const sprites = [0, 12, 24, 36];
 
           const entity = this.physics.add
-            .sprite(player.x, player.y, "playerSheet", sprites[playerNum])
+            .sprite(player.x, player.y, 'playerSheet', sprites[playerNum])
             .setOffset(player.x, player.y);
           this.playerEntities[sessionId] = entity;
-
+          this.playerEntities[sessionId].playerNumber = playerNum;
           if (sessionId === this.room.sessionId) {
             this.currentPlayer = entity;
 
@@ -76,14 +76,14 @@ export default class Game extends Phaser.Scene {
             // all remote players are here!
             // (same as before, we are going to interpolate remote players)
             player.onChange(() => {
-              entity.setData("serverX", player.x);
-              entity.setData("serverY", player.y);
+              entity.setData('serverX', player.x);
+              entity.setData('serverY', player.y);
             });
           }
 
           player.onChange(() => {
-            entity.setData("serverX", player.x);
-            entity.setData("serverY", player.y);
+            entity.setData('serverX', player.x);
+            entity.setData('serverY', player.y);
           });
         }
       );
@@ -107,7 +107,7 @@ export default class Game extends Phaser.Scene {
     if (!this.currentPlayer) {
       return;
     }
-    console.log(this.currentPlayer.data);
+    const animNum: number = this.currentPlayer.playerNumber;
 
     const velocity = 2;
 
@@ -119,23 +119,31 @@ export default class Game extends Phaser.Scene {
 
     if (this.inputPayload.left) {
       this.currentPlayer.x -= velocity;
-      this.currentPlayer.play("left-walk-0", true);
+      this.currentPlayer.play(`left-walk-${animNum}`, true);
     } else if (this.inputPayload.right) {
       this.currentPlayer.x += velocity;
-      this.currentPlayer.play("right-walk-0", true);
+      this.currentPlayer.play(`right-walk-${animNum}`, true);
     }
 
     if (this.inputPayload.up) {
       this.currentPlayer.y -= velocity;
-      this.currentPlayer.play("up-walk-0");
+      this.currentPlayer.play(`up-walk-${animNum}`, true);
     } else if (this.inputPayload.down) {
       this.currentPlayer.y += velocity;
+      this.currentPlayer.play(`down-walk-${animNum}`, true);
     } else {
       this.currentPlayer.setVelocity(0, 0);
-      // const key = this.currentPlayer.anims.currentAnim!.key;
-      // const parts = key!.split("-");
-      // const direction = parts[0];
-      // this.currentPlayer.play(`${direction}-idle-0`);
+
+      if (!this.inputPayload.left && !this.inputPayload.right) {
+        const currentAnimKey = this.currentPlayer.anims.currentAnim?.key;
+
+        // Check if the player is not already playing an idle animation
+        if (currentAnimKey && !currentAnimKey.includes('idle')) {
+          const parts = currentAnimKey.split('-');
+          const direction = parts[0];
+          this.currentPlayer.play(`${direction}-idle-${animNum}`);
+        }
+      }
     }
 
     if (!this.room) {
