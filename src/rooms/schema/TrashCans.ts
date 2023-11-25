@@ -1,4 +1,4 @@
-abstract class TrashCan {
+export abstract class TrashCan {
   x: number;
   y: number;
   abstract type: string;
