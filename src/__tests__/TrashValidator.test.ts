@@ -1,6 +1,6 @@
-import { CardboardBox } from "../rooms/schema/Trash";
-import { PaperCan, PlasticCan } from "../rooms/schema/TrashCans";
-import { TrashValidator } from "../rooms/schema/TrashValidator";
+import { CardboardBox } from "../classes/Trash";
+import { PaperCan, PlasticCan } from "../classes/TrashCans";
+import { TrashValidator } from "../classes/TrashValidator";
 import { expect } from "@jest/globals";
 
 describe("Trash Validator", () => {
