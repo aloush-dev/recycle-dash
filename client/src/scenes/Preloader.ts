@@ -1,13 +1,16 @@
 import Phaser from "phaser";
-import { TRASH_CAN_URLS } from "../constants";
+import { TRASH_CAN_URLS, TRASH_URLS } from "../constants";
 
 export default class PreLoader extends Phaser.Scene {
   constructor() {
     super("preloader");
   }
   preload() {
-    for (const img in TRASH_CAN_URLS) {
-      this.load.image(img, TRASH_CAN_URLS[img as keyof typeof TRASH_CAN_URLS]);
+    for (const key in TRASH_CAN_URLS) {
+      this.load.image(key, TRASH_CAN_URLS[key as keyof typeof TRASH_CAN_URLS]);
+    }
+    for (const key in TRASH_URLS) {
+      this.load.image(key, TRASH_URLS[key as keyof typeof TRASH_URLS]);
     }
     this.load.spritesheet(
       "playerSheet",
