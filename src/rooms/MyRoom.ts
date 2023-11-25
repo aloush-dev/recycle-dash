@@ -15,56 +15,53 @@ import {
 } from "../globalConstants";
 import TrashGenerator from "../Trash/TrashGenorator";
 
+const LETTERS = "ABCDEFGHIJKLLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
 export class MyRoom extends Room<MyRoomState> {
   maxClients = 4;
   update: any; // NOT GOOD PLS FIX
+  LOBBY_CHANNEL = "$mylobby";
 
-  onCreate(options: any) {
+  generateRoomIdSingle(): string {
+    let result = "";
+    for (let i = 0; i < 4; i++) {
+      result += LETTERS.charAt(Math.floor(Math.random() * LETTERS.length));
+    }
+    return result;
+  }
+
+  async generateRoomId(): Promise<string> {
+    const currentIds = await this.presence.smembers(this.LOBBY_CHANNEL);
+    let id;
+    do {
+      id = this.generateRoomIdSingle();
+    } while (currentIds.includes(id));
+
+    await this.presence.sadd(this.LOBBY_CHANNEL, id);
+    return id;
+  }
+
+  async onCreate(options: any) {
+    this.roomId = await this.generateRoomId();
     this.setState(new MyRoomState());
     this.setUpCans();
     this.setUpTrash();
 
-    this.onMessage(0, (client, input) => {
-      const locations: { x: number; y: number }[] = [];
-      for (let i = 4; i > 0; i--) {
-        const x = WIDTH / 2;
-        const y = i * 100;
-        locations.push({ x, y });
+    this.onMessage("updatePlayer", (client, input) => {
+      const player = this.state.players.get(client.sessionId);
+      const velocity = 2;
+
+      player.animation = input.animation;
+      if (input.left) {
+        player.x -= velocity;
+      } else if (input.right) {
+        player.x += velocity;
       }
-      locations.sort(() => Math.random() - 0.5);
-      this.state.trashCans.set(
-        "0",
-        new PaperCan(locations[0].x, locations[0].y)
-      );
-      this.state.trashCans.set(
-        "1",
-        new PlasticCan(locations[1].x, locations[1].y)
-      );
-      this.state.trashCans.set(
-        "2",
-        new GlassCan(locations[2].x, locations[2].y)
-      );
-      this.state.trashCans.set(
-        "3",
-        new NonRecyclable(locations[3].x, locations[3].y)
-      );
-
-      this.onMessage("updatePlayer", (client, input) => {
-        const player = this.state.players.get(client.sessionId);
-        const velocity = 2;
-
-        player.animation = input.animation;
-        if (input.left) {
-          player.x -= velocity;
-        } else if (input.right) {
-          player.x += velocity;
-        }
-        if (input.up) {
-          player.y -= velocity;
-        } else if (input.down) {
-          player.y += velocity;
-        }
-      });
+      if (input.up) {
+        player.y -= velocity;
+      } else if (input.down) {
+        player.y += velocity;
+      }
     });
   }
   onJoin(client: Client, options: any) {

@@ -23,7 +23,7 @@ type Trash = {
   points: number;
   pickedUp: boolean;
   name: string;
-
+};
 
 type InputPayloadType = {
   left: boolean;
@@ -52,13 +52,18 @@ export default class Game extends Phaser.Scene {
   };
 
   cursorKeys!: Phaser.Types.Input.Keyboard.CursorKeys;
+
+  preload() {
+    this.load.image("gameBackground", "https://i.ibb.co/khH5sZ0/map.png");
+  }
   room!: Room;
 
   init() {
     this.cursorKeys = this.input.keyboard!.createCursorKeys();
   }
-
   client = new Client("ws://localhost:2567");
+  room!: Room;
+
   playerEntities: { [sessionId: string]: any } = {};
   trashCanEntities: { [key: string]: any } = {};
   trashEntities: { [key: string]: any } = {};
@@ -106,6 +111,8 @@ export default class Game extends Phaser.Scene {
   }
 
   async create() {
+    const bg = this.add.sprite(0, 0, "gameBackground");
+    bg.setOrigin(0, 0);
     console.log("Joining Room");
     try {
       this.room = await this.client.joinOrCreate("my_room");
