@@ -4,8 +4,33 @@ import { Client, Room } from "colyseus.js";
 type Player = {
   x: number;
   y: number;
+  animation: string | null;
   inputQueue: any;
   onChange: any; //MUST fix this cannot put an any type in front of Johnny and Haz
+};
+type TrashCan = {
+  x: number;
+  y: number;
+  imgUrl: string;
+  type: string;
+};
+
+type Trash = {
+  x: number;
+  y: number;
+  imgUrl: string;
+  type: string;
+  points: number;
+  pickedUp: boolean;
+  name: string;
+};
+
+type InputPayloadType = {
+  left: boolean;
+  right: boolean;
+  up: boolean;
+  down: boolean;
+  animation: string | null;
 };
 export default class Game extends Phaser.Scene {
   state: any;
@@ -13,22 +38,25 @@ export default class Game extends Phaser.Scene {
     super("game");
   }
 
-  currentPlayer!: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+  currentPlayer!: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & {
+    playerNumber?: number;
+  };
   remoteRef!: Phaser.GameObjects.Rectangle;
 
-  inputPayload = {
+  inputPayload: InputPayloadType = {
     left: false,
     right: false,
     up: false,
     down: false,
+    animation: "down-idle-0",
   };
 
-  /** @type {Phaser.Types.Input.Keyboard.CursorKeys} */
   cursorKeys!: Phaser.Types.Input.Keyboard.CursorKeys;
 
   preload() {
     this.load.image("gameBackground", "https://i.ibb.co/khH5sZ0/map.png");
   }
+  room!: Room;
 
   init() {
     this.cursorKeys = this.input.keyboard!.createCursorKeys();
@@ -37,6 +65,50 @@ export default class Game extends Phaser.Scene {
   room!: Room;
 
   playerEntities: { [sessionId: string]: any } = {};
+  trashCanEntities: { [key: string]: any } = {};
+  trashEntities: { [key: string]: any } = {};
+  private createCan(trashCanItem: any, key: string) {
+    const rectWidth = 32;
+    const rectHeight = 32;
+
+    const graphics = this.add.graphics({ fillStyle: { alpha: 0 } });
+    const rect = new Phaser.Geom.Rectangle(
+      trashCanItem.x,
+      trashCanItem.y,
+      rectWidth,
+      rectHeight
+    );
+    graphics.fillRectShape(rect);
+
+    const imageX = trashCanItem.x + rectWidth / 2;
+    const imageY = trashCanItem.y + rectHeight / 2;
+
+    const image = this.add.image(imageX, imageY, trashCanItem.type);
+
+    this.trashCanEntities[key] = graphics;
+  }
+  private createTrash(trashItem: any, key: string) {
+    console.log(trashItem);
+
+    const rectWidth = 32;
+    const rectHeight = 32;
+
+    const graphics = this.add.graphics({ fillStyle: { alpha: 0 } });
+    const rect = new Phaser.Geom.Rectangle(
+      trashItem.x,
+      trashItem.y,
+      rectWidth,
+      rectHeight
+    );
+    graphics.fillRectShape(rect);
+
+    const imageX = trashItem.x + rectWidth / 2;
+    const imageY = trashItem.y + rectHeight / 2;
+
+    const image = this.add.image(imageX, imageY, trashItem.name);
+
+    this.trashEntities[trashItem.name] = graphics;
+  }
 
   async create() {
     const bg = this.add.sprite(0, 0, "gameBackground");
@@ -44,6 +116,13 @@ export default class Game extends Phaser.Scene {
     console.log("Joining Room");
     try {
       this.room = await this.client.joinOrCreate("my_room");
+
+      this.room.state.trashCans.onAdd((trashCan: TrashCan, key: string) => {
+        this.createCan(trashCan, key);
+      });
+      this.room.state.trash.onAdd((trashItem: Trash, key: string) => {
+        this.createTrash(trashItem, key);
+      });
 
       this.room.state.players.onAdd(
         (player: Player, sessionId: string | number) => {
@@ -55,8 +134,9 @@ export default class Game extends Phaser.Scene {
             "Players connected: ",
             Object.keys(this.playerEntities).length + 1
           );
+
           const playerNum = Object.keys(this.playerEntities).length;
-          const sprites = [0, 12, 24, 36];
+          const sprites = [24, 36, 48, 60];
 
           const entity = this.physics.add
             .sprite(player.x, player.y, "playerSheet", sprites[playerNum])
@@ -80,7 +160,7 @@ export default class Game extends Phaser.Scene {
             });
           } else {
             // all remote players are here!
-            // (same as before, we are going to interpolate remote players)
+
             player.onChange(() => {
               entity.setData("serverX", player.x);
               entity.setData("serverY", player.y);
@@ -90,30 +170,32 @@ export default class Game extends Phaser.Scene {
           player.onChange(() => {
             entity.setData("serverX", player.x);
             entity.setData("serverY", player.y);
+            entity.setData("animation", player.animation);
           });
         }
       );
-      this.room.state.players.onRemove(
-        (player: { x: number; y: number }, sessionId: string | number) => {
-          const entity = this.playerEntities[sessionId];
-          if (entity) {
-            entity.destroy();
-            delete this.playerEntities[sessionId];
-          }
-          console.log(`Player at session ${sessionId} has left the game`);
+
+      this.room.state.players.onRemove((sessionId: string | number) => {
+        const entity = this.playerEntities[sessionId];
+        if (entity) {
+          entity.destroy();
+          delete this.playerEntities[sessionId];
         }
-      );
+        console.log(`Player at session ${sessionId} has left the game`);
+      });
     } catch (e) {
       console.error(e);
     }
   }
-  updatePlayer() {}
 
   update(time: number, delta: number): void {
     if (!this.currentPlayer) {
       return;
     }
-    const animNum: number = this.currentPlayer.playerNumber;
+    if (!this.room) {
+      return;
+    }
+    const animNum: number = this.currentPlayer.playerNumber || 0;
 
     const velocity = 2;
 
@@ -121,22 +203,23 @@ export default class Game extends Phaser.Scene {
     this.inputPayload.right = this.cursorKeys.right.isDown;
     this.inputPayload.up = this.cursorKeys.up.isDown;
     this.inputPayload.down = this.cursorKeys.down.isDown;
-    this.room.send(0, this.inputPayload);
+    this.inputPayload.animation =
+      this.currentPlayer.anims.currentAnim?.key || null;
 
     if (this.inputPayload.left) {
-      this.currentPlayer.x -= velocity;
       this.currentPlayer.play(`left-walk-${animNum}`, true);
+      this.currentPlayer.x -= velocity;
     } else if (this.inputPayload.right) {
-      this.currentPlayer.x += velocity;
       this.currentPlayer.play(`right-walk-${animNum}`, true);
+      this.currentPlayer.x += velocity;
     }
 
     if (this.inputPayload.up) {
-      this.currentPlayer.y -= velocity;
       this.currentPlayer.play(`up-walk-${animNum}`, true);
+      this.currentPlayer.y -= velocity;
     } else if (this.inputPayload.down) {
-      this.currentPlayer.y += velocity;
       this.currentPlayer.play(`down-walk-${animNum}`, true);
+      this.currentPlayer.y += velocity;
     } else {
       this.currentPlayer.setVelocity(0, 0);
 
@@ -151,10 +234,7 @@ export default class Game extends Phaser.Scene {
         }
       }
     }
-
-    if (!this.room) {
-      return;
-    }
+    this.room.send("updatePlayer", this.inputPayload);
 
     for (let sessionId in this.playerEntities) {
       if (sessionId === this.room.sessionId) {
@@ -163,10 +243,14 @@ export default class Game extends Phaser.Scene {
 
       const entity = this.playerEntities[sessionId];
 
-      const { serverX, serverY } = entity.data.values;
-
-      entity.x = Phaser.Math.Linear(entity.x, serverX, 0.4);
-      entity.y = Phaser.Math.Linear(entity.y, serverY, 0.4);
+      if (entity) {
+        const { serverX, serverY, animation } = entity.data.values;
+        entity.x = Phaser.Math.Linear(entity.x, serverX, 0.4);
+        entity.y = Phaser.Math.Linear(entity.y, serverY, 0.4);
+        if (animation) {
+          entity.play(animation, true);
+        }
+      }
     }
   }
 }

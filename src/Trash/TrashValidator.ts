@@ -1,5 +1,5 @@
+import { TrashCan } from "../classes/TrashCans";
 import { Trash } from "./Trash";
-import { TrashCan } from "./TrashCans";
 
 export class TrashValidator {
   trashCan: TrashCan;
