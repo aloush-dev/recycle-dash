@@ -9,17 +9,14 @@ abstract class TrashCan {
 }
 
 export class PaperCan extends TrashCan {
-  type = 'paper';
+  type = "paper";
 }
 export class GlassCan extends TrashCan {
-  type = 'glass';
-}
-export class MetalCan extends TrashCan {
-  type = 'metal';
+  type = "glass";
 }
 export class PlasticCan extends TrashCan {
-  type = 'plastic';
+  type = "plastic";
 }
 export class NonRecyclable extends TrashCan {
-  type = 'non-recyclable';
+  type = "non-recyclable";
 }
