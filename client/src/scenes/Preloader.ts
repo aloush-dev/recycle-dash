@@ -4,7 +4,6 @@ import { TRASH_CAN_URLS } from "../constants";
 export default class PreLoader extends Phaser.Scene {
   constructor() {
     super("preloader");
-    super("preloader");
   }
   preload() {
     for (const img in TRASH_CAN_URLS) {

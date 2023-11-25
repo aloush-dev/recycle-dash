@@ -49,9 +49,6 @@ export class MyRoom extends Room<MyRoomState> {
         player.y += velocity;
       }
     });
-    // this.setSimulationInterval((deltaTime) => {
-    //   this.update(deltaTime);
-    // });
   }
 
   onJoin(client: Client, options: any) {

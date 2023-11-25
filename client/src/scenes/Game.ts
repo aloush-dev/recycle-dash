@@ -131,18 +131,7 @@ export default class Game extends Phaser.Scene {
           });
         }
       );
-      // this.room.onMessage("updatePlayerPositions", (message: any) => {
-      //   const { sessionId, player, animation } = message;
-      //   console.log(player, player.playerNum);
-      //   const entity = this.playerEntities[sessionId];
-      //   if (entity) {
-      //     entity.x = player.x;
-      //     entity.y = player.y;
-      //     if (animation) {
-      //       entity.play(animation);
-      //     }
-      //   }
-      // });
+
       this.room.state.players.onRemove((sessionId: string | number) => {
         const entity = this.playerEntities[sessionId];
         if (entity) {
