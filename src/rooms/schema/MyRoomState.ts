@@ -1,4 +1,4 @@
-import { MapSchema, Schema, type } from "@colyseus/schema";
+import { MapSchema, ArraySchema, Schema, type } from "@colyseus/schema";
 import { Trash } from "../../Trash/Trash";
 import { TrashCan } from "../../Trash/TrashCans";
 
@@ -10,6 +10,6 @@ export class Player extends Schema {
 }
 export class MyRoomState extends Schema {
   @type({ map: Player }) players = new MapSchema<Player>();
-  @type({ map: Trash }) trash = new MapSchema<Trash>();
+  @type([Trash]) trash = new ArraySchema<Trash>();
   @type({ map: TrashCan }) trashCans = new MapSchema<TrashCan>();
 }

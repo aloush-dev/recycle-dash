@@ -15,6 +15,16 @@ type TrashCan = {
   type: string;
 };
 
+type Trash = {
+  x: number;
+  y: number;
+  imgUrl: string;
+  type: string;
+  points: number;
+  pickedUp: boolean;
+  name: string;
+
+
 type InputPayloadType = {
   left: boolean;
   right: boolean;
@@ -51,6 +61,7 @@ export default class Game extends Phaser.Scene {
   client = new Client("ws://localhost:2567");
   playerEntities: { [sessionId: string]: any } = {};
   trashCanEntities: { [key: string]: any } = {};
+  trashEntities: { [key: string]: any } = {};
   private createCan(trashCanItem: any, key: string) {
     const rectWidth = 32;
     const rectHeight = 32;
@@ -71,14 +82,39 @@ export default class Game extends Phaser.Scene {
 
     this.trashCanEntities[key] = graphics;
   }
+  private createTrash(trashItem: any, key: string) {
+    console.log(trashItem);
+
+    const rectWidth = 32;
+    const rectHeight = 32;
+
+    const graphics = this.add.graphics({ fillStyle: { alpha: 0 } });
+    const rect = new Phaser.Geom.Rectangle(
+      trashItem.x,
+      trashItem.y,
+      rectWidth,
+      rectHeight
+    );
+    graphics.fillRectShape(rect);
+
+    const imageX = trashItem.x + rectWidth / 2;
+    const imageY = trashItem.y + rectHeight / 2;
+
+    const image = this.add.image(imageX, imageY, trashItem.name);
+
+    this.trashEntities[trashItem.name] = graphics;
+  }
 
   async create() {
     console.log("Joining Room");
     try {
       this.room = await this.client.joinOrCreate("my_room");
-      console.log("Initial trash cans state:", this.room.state.trashCans);
+
       this.room.state.trashCans.onAdd((trashCan: TrashCan, key: string) => {
         this.createCan(trashCan, key);
+      });
+      this.room.state.trash.onAdd((trashItem: Trash, key: string) => {
+        this.createTrash(trashItem, key);
       });
 
       this.room.state.players.onAdd(

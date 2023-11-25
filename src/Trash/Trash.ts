@@ -16,66 +16,66 @@ export abstract class Trash extends Schema {
 }
 
 abstract class Paper extends Trash {
-  type = "paper";
-  points: 2;
+  @type("string") type = "paper";
+  @type("number") points = 2;
 }
 abstract class Glass extends Trash {
-  type = "glass";
-  points: 3;
+  @type("string") type = "glass";
+  @type("number") points = 3;
 }
 abstract class Plastic extends Trash {
-  type = "plastic";
-  points: 4;
+  @type("string") type = "plastic";
+  @type("number") points = 4;
 }
 abstract class NonRecyclable extends Trash {
-  type = "non-recyclable";
-  points: 1;
+  @type("string") type = "non-recyclable";
+  @type("number") points = 1;
 }
 export class WaterBottle extends Plastic {
-  name: "water-bottle";
-  imgUrl: "https://i.ibb.co/y4tfVy3/plastic-bottle.png";
+  @type("string") name = "water-bottle";
+  @type("string") imgUrl = "https://i.ibb.co/y4tfVy3/plastic-bottle.png";
 }
 export class MilkBottle extends Plastic {
-  name: "milk-bottle";
-  imgUrl: "https://i.ibb.co/Dgrby43/plastic-jug.png";
+  @type("string") name = "milk-bottle";
+  @type("string") imgUrl = "https://i.ibb.co/Dgrby43/plastic-jug.png";
 }
 export class DetergentBottle extends Plastic {
-  name: "detergent-bottle";
-  imgUrl: "https://i.ibb.co/QfZRZY9/plastic-red.png";
+  @type("string") name = "detergent-bottle";
+  @type("string") imgUrl = "https://i.ibb.co/QfZRZY9/plastic-red.png";
 }
 export class CardboardBox extends Paper {
-  name: "cardboard-box";
-  imgUrl: "https://i.ibb.co/PCj4ypP/paper-box.png";
+  @type("string") name = "cardboard-box";
+  @type("string") imgUrl = "https://i.ibb.co/PCj4ypP/paper-box.png";
 }
 export class Newspaper extends Paper {
-  name: "newspaper";
-  imgUrl: "https://i.ibb.co/vBvWCsW/paper-newspaper.png";
+  @type("string") name = "newspaper";
+  @type("string") imgUrl = "https://i.ibb.co/vBvWCsW/paper-newspaper.png";
 }
 export class PaperBag extends Paper {
-  name: "paper-bag";
-  imgUrl: "https://i.ibb.co/KNTv3Fk/paper-bag.png";
+  @type("string") name = "paper-bag";
+  @type("string") imgUrl = "https://i.ibb.co/KNTv3Fk/paper-bag.png";
 }
 export class GlassBottle extends Glass {
-  name: "glass-bottle";
-  imgUrl: "https://i.ibb.co/tqt2WxM/glass-soda-bottle.png";
+  @type("string") name = "glass-bottle";
+  @type("string") imgUrl = "https://i.ibb.co/tqt2WxM/glass-soda-bottle.png";
 }
 export class GlassJar extends Glass {
-  name: "glass-jar";
-  imgUrl: "https://i.ibb.co/zrwR5z9/glass-jar.png";
+  @type("string") name = "glass-jar";
+  @type("string") imgUrl = "https://i.ibb.co/zrwR5z9/glass-jar.png";
 }
 export class BeerBottle extends Glass {
-  name: "beer-bottle";
-  imgUrl: "https://i.ibb.co/PDkCV1X/glass-beer-bottle.png";
+  @type("string") name = "beer-bottle";
+  @type("string") imgUrl = "https://i.ibb.co/PDkCV1X/glass-beer-bottle.png";
 }
 export class PolystyreneCup extends NonRecyclable {
-  name: "polystyrene-cup";
-  imgUrl: "https://i.ibb.co/sJBz2hr/trash-cup.png";
+  @type("string") name = "polystyrene-cup";
+  @type("string") imgUrl = "https://i.ibb.co/sJBz2hr/trash-cup.png";
 }
 export class CeramicMug extends NonRecyclable {
-  name: "ceramic-mug";
-  imgUrl: "https://i.ibb.co/Mc0TSp7/trash-mug.png";
+  @type("string") name = "ceramic-mug";
+  @type("string") imgUrl = "https://i.ibb.co/Mc0TSp7/trash-mug.png";
 }
 export class SprayPaint extends NonRecyclable {
-  name: "spray-paint";
-  imgUrl: "https://i.ibb.co/F3cGXMz/trash-spray-can.png";
+  @type("string") name = "spray-paint";
+  @type("string") imgUrl = "https://i.ibb.co/F3cGXMz/trash-spray-can.png";
 }
