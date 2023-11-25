@@ -1,16 +1,22 @@
-import Phaser from 'phaser';
+import Phaser from "phaser";
+import { TRASH_CAN_URLS } from "../constants";
 
 export default class PreLoader extends Phaser.Scene {
   constructor() {
-    super('preloader');
+    super("preloader");
   }
-
   preload() {
+    for (const img in TRASH_CAN_URLS) {
+      this.load.image(img, TRASH_CAN_URLS[img as keyof typeof TRASH_CAN_URLS]);
+    }
     this.load.spritesheet(
-      'playerSheet',
-      'https://i.ibb.co/rbjPCCj/Characters-V3-Colour-3.png',
+      "playerSheet",
+      "https://i.ibb.co/rbjPCCj/Characters-V3-Colour-3.png",
       { frameWidth: 80, frameHeight: 80 }
     );
+    this.load.on("complete", () => {
+      console.log("All assets are loaded");
+    });
   }
   create() {
     const startPositions = {
@@ -77,8 +83,6 @@ export default class PreLoader extends Phaser.Scene {
         repeat: -1,
       });
 
- 
-
       this.anims.create({
         key: `right-walk-${i}`,
         frames: this.anims.generateFrameNumbers(`playerSheet`, {
@@ -104,7 +108,6 @@ export default class PreLoader extends Phaser.Scene {
       startPositions.rightWalkEnd += 12;
     }
 
-    this.scene.start('welcome');
-
+    this.scene.start("welcome");
   }
 }

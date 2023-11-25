@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.NON_RECYCLABLE_IMG_URL = exports.GLASS_IMG_URL = exports.PLASTIC_IMG_URL = exports.PAPER_IMG_URL = exports.TRASH_LOADING_WIDTH = exports.WIDTH = exports.HEIGHT = void 0;
+exports.HEIGHT = 800;
+exports.WIDTH = 1000;
+exports.TRASH_LOADING_WIDTH = exports.WIDTH / 4;
+exports.PAPER_IMG_URL = "https://i.ibb.co/r2rkLYf/blue-trash-can.png";
+exports.PLASTIC_IMG_URL = "https://i.ibb.co/qjMX2N5/red-trash-can.png";
+exports.GLASS_IMG_URL = "https://i.ibb.co/Vv8Sdw1/green-trash-can.png";
+exports.NON_RECYCLABLE_IMG_URL = "https://i.ibb.co/T1YskkW/brown-trash-can.png";

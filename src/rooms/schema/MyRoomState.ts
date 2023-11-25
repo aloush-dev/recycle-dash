@@ -1,6 +1,6 @@
-import { MapSchema, Schema, Context, type } from "@colyseus/schema";
-import { Trash } from "../../classes/Trash";
-import { TrashCan } from "../../classes/TrashCans";
+import { MapSchema, Schema, type } from "@colyseus/schema";
+import { Trash } from "../../Trash/Trash";
+import { TrashCan } from "../../Trash/TrashCans";
 
 export class Player extends Schema {
   @type("number") x: number;
@@ -10,6 +10,6 @@ export class Player extends Schema {
 }
 export class MyRoomState extends Schema {
   @type({ map: Player }) players = new MapSchema<Player>();
-  trash = new MapSchema<Trash>();
-  trashCans = new MapSchema<TrashCan>();
+  @type({ map: Trash }) trash = new MapSchema<Trash>();
+  @type({ map: TrashCan }) trashCans = new MapSchema<TrashCan>();
 }
