@@ -11,7 +11,35 @@
   font-size: 18px;
 }
 
+main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40;
+}
+
 h1 {
   font-size: 3rem;
   text-align: center;
+}
+
+#instructions {
+  display: flex;
+  flex-direction: column;
+  width: 200;
+  border: 4px solid black;
+  padding: 1rem;
+}
+
+.indiv-bin {
+  display: flex;
+  align-items: center;
+}
+
+.bin-img {
+  width: 40;
+}
+
+.trash-img {
+  width: 40;
 }

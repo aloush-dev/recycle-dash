@@ -77,6 +77,8 @@ export default class PreLoader extends Phaser.Scene {
         repeat: -1,
       });
 
+ 
+
       this.anims.create({
         key: `right-walk-${i}`,
         frames: this.anims.generateFrameNumbers(`playerSheet`, {
@@ -102,6 +104,7 @@ export default class PreLoader extends Phaser.Scene {
       startPositions.rightWalkEnd += 12;
     }
 
-    this.scene.start('game');
+    this.scene.start('welcome');
+
   }
 }
