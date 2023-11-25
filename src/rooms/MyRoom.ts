@@ -23,10 +23,32 @@ export class MyRoom extends Room<MyRoomState> {
     this.setState(new MyRoomState());
     this.setUpCans();
     this.setUpTrash();
+    
     this.onMessage(0, (client, input) => {
+
+    const locations: { x: number; y: number }[] = [];
+    for (let i = 4; i > 0; i--) {
+      const x = WIDTH / 2;
+      const y = i * 100;
+      locations.push({ x, y });
+    }
+    locations.sort(() => Math.random() - 0.5);
+    this.state.trashCans.set("0", new PaperCan(locations[0].x, locations[0].y));
+    this.state.trashCans.set(
+      "1",
+      new PlasticCan(locations[1].x, locations[1].y)
+    );
+    this.state.trashCans.set("2", new GlassCan(locations[2].x, locations[2].y));
+    this.state.trashCans.set(
+      "3",
+      new NonRecyclable(locations[3].x, locations[3].y)
+    );
+
+    this.onMessage("updatePlayer", (client, input) => {
       const player = this.state.players.get(client.sessionId);
       const velocity = 2;
-      player.inputQueue.push(input);
+
+      player.animation = input.animation;
       if (input.left) {
         player.x -= velocity;
       } else if (input.right) {
@@ -38,9 +60,6 @@ export class MyRoom extends Room<MyRoomState> {
         player.y += velocity;
       }
     });
-    // this.setSimulationInterval((deltaTime) => {
-    //   this.update(deltaTime);
-    // });
   }
 
   onJoin(client: Client, options: any) {

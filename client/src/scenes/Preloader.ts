@@ -23,18 +23,18 @@ export default class PreLoader extends Phaser.Scene {
   }
   create() {
     const startPositions = {
-      downIdle: 156,
-      upIdle: 157,
-      leftIdle: 159,
-      rightIdle: 158,
-      downWalkStart: 160,
-      downWalkEnd: 161,
-      upWalkStart: 162,
-      upWalkEnd: 163,
-      leftWalkStart: 166,
-      leftWalkEnd: 167,
-      rightWalkStart: 164,
-      rightWalkEnd: 165,
+      downIdle: 24,
+      upIdle: 25,
+      leftIdle: 27,
+      rightIdle: 26,
+      downWalkStart: 28,
+      downWalkEnd: 29,
+      upWalkStart: 30,
+      upWalkEnd: 31,
+      leftWalkStart: 34,
+      leftWalkEnd: 35,
+      rightWalkStart: 32,
+      rightWalkEnd: 33,
     };
     for (let i = 0; i < 4; i++) {
       this.anims.create({
