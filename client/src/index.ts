@@ -7,7 +7,7 @@ const config = {
   parent: "app",
   width: 800,
   height: 600,
-  backgroundColor: "#b6d53c",
+
   physics: {
     default: "arcade",
     arcade: {

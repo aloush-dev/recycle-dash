@@ -13,7 +13,7 @@ export default class Game extends Phaser.Scene {
     super("game");
   }
 
-  currentPlayer!: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
+  currentPlayer!: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
   remoteRef!: Phaser.GameObjects.Rectangle;
 
   inputPayload = {
@@ -38,19 +38,23 @@ export default class Game extends Phaser.Scene {
     console.log("Joining Room");
     try {
       this.room = await this.client.joinOrCreate("my_room");
-
       this.room.state.players.onAdd(
         (player: Player, sessionId: string | number) => {
           console.log(
             "A player has joined! Their unique session id is",
             sessionId
           );
-
-          const entity = this.physics.add.image(
-            player.x,
-            player.y,
-            "player_one"
+          console.log(
+            "Players connected: ",
+            Object.keys(this.playerEntities).length + 1
           );
+          const playerNum = Object.keys(this.playerEntities).length;
+          const sprites = [156, 24, 48, 96];
+          const { width, height } = this.scale;
+
+          const entity = this.physics.add
+            .sprite(player.x, player.y, "playerSheet", sprites[playerNum])
+            .setOffset(player.x, player.y);
           this.playerEntities[sessionId] = entity;
 
           if (sessionId === this.room.sessionId) {
@@ -97,30 +101,15 @@ export default class Game extends Phaser.Scene {
       console.error(e);
     }
   }
+  updatePlayer() {}
+
   update(time: number, delta: number): void {
     if (!this.currentPlayer) {
       return;
     }
+    console.log(this.currentPlayer.data);
 
     const velocity = 2;
-
-    // this.state.players.forEach((player: Player) => {
-    //   let input: any;
-
-    //   while ((input = player.inputQueue.shift())) {
-    //     if (input.left) {
-    //       player.x -= velocity;
-    //     } else if (input.right) {
-    //       player.x += velocity;
-    //     }
-
-    //     if (input.up) {
-    //       player.y -= velocity;
-    //     } else if (input.down) {
-    //       player.y += velocity;
-    //     }
-    //   }
-    // });
 
     this.inputPayload.left = this.cursorKeys.left.isDown;
     this.inputPayload.right = this.cursorKeys.right.isDown;
@@ -130,14 +119,23 @@ export default class Game extends Phaser.Scene {
 
     if (this.inputPayload.left) {
       this.currentPlayer.x -= velocity;
+      this.currentPlayer.play("left-walk-0", true);
     } else if (this.inputPayload.right) {
       this.currentPlayer.x += velocity;
+      this.currentPlayer.play("right-walk-0", true);
     }
 
     if (this.inputPayload.up) {
       this.currentPlayer.y -= velocity;
+      this.currentPlayer.play("up-walk-0");
     } else if (this.inputPayload.down) {
       this.currentPlayer.y += velocity;
+    } else {
+      this.currentPlayer.setVelocity(0, 0);
+      // const key = this.currentPlayer.anims.currentAnim!.key;
+      // const parts = key!.split("-");
+      // const direction = parts[0];
+      // this.currentPlayer.play(`${direction}-idle-0`);
     }
 
     if (!this.room) {
@@ -150,17 +148,11 @@ export default class Game extends Phaser.Scene {
       }
 
       const entity = this.playerEntities[sessionId];
+
       const { serverX, serverY } = entity.data.values;
 
       entity.x = Phaser.Math.Linear(entity.x, serverX, 0.4);
       entity.y = Phaser.Math.Linear(entity.y, serverY, 0.4);
     }
-
-    // // send input to the server
-    // this.inputPayload.left = this.cursorKeys.left.isDown;
-    // this.inputPayload.right = this.cursorKeys.right.isDown;
-    // this.inputPayload.up = this.cursorKeys.up.isDown;
-    // this.inputPayload.down = this.cursorKeys.down.isDown;
-    // this.room.send(0, this.inputPayload);
   }
 }
