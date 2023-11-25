@@ -1,0 +1,17 @@
+@font-face {
+  font-family: MarioKart;
+  src: url(Mario-Kart-DS.ttf);
+  font-weight: bold;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  font-family: MarioKart;
+  font-size: 18px;
+}
+
+h1 {
+  font-size: 3rem;
+  text-align: center;
+}
