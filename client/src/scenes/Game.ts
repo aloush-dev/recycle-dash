@@ -138,26 +138,18 @@ export default class Game extends Phaser.Scene {
           const playerNum = Object.keys(this.playerEntities).length;
           const sprites = [24, 36, 48, 60];
 
-          const entity = this.physics.add
-            .sprite(player.x, player.y, "playerSheet", sprites[playerNum])
-            .setOffset(player.x, player.y);
+          const entity = this.physics.add.sprite(
+            player.x,
+            player.y,
+            "playerSheet",
+            sprites[playerNum]
+          );
+
+          entity.setScale(0.55);
           this.playerEntities[sessionId] = entity;
           this.playerEntities[sessionId].playerNumber = playerNum;
           if (sessionId === this.room.sessionId) {
             this.currentPlayer = entity;
-
-            this.remoteRef = this.add.rectangle(
-              0,
-              0,
-              entity.width,
-              entity.height
-            );
-            this.remoteRef.setStrokeStyle(1, 0xff0000);
-
-            player.onChange(() => {
-              this.remoteRef.x = player.x;
-              this.remoteRef.y = player.y;
-            });
           } else {
             // all remote players are here!
 
