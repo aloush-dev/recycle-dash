@@ -10,16 +10,42 @@
 
   <body>
     <h1>Recycle Dash</h1>
-    <script src="/src/index.ts" type="module"></script>
+    <main>
+      <script src="/src/index.ts" type="module"></script>
 
-    <div id="app"></div>
+      <div id="app"></div>
 
-    <section id="instructions">
-      <h2>Instructions</h2>
-      <img src="./src/textures/blue_trash_can.png" />
-      <img src="./src/textures/red_trash_can.png" />
-      <img src="./src/textures/green_trash_can.png" />
-      <img src="./src/textures/brown_trash_can.png" />
-    </section>
+      <section id="instructions">
+        <h2>Instructions</h2>
+        <p>
+          The aim of the game is to get the correct trash into the correct bin
+          below shows what belongs where
+        </p>
+        <div class="indiv-bin">
+          <img class="bin-img" src="./src/textures/blue_trash_can.png" />
+          <img class="trash-img" src="./src/textures/paper_bag.png" />
+          <img class="trash-img" src="./src/textures/paper_box.png" />
+          <img class="trash-img" src="./src/textures/paper_newspaper.png" />
+        </div>
+        <div class="indiv-bin">
+          <img class="bin-img" src="./src/textures/red_trash_can.png" />
+          <img class="trash-img" src="./src/textures/plastic_bottle.png" />
+          <img class="trash-img" src="./src/textures/plastic_jug.png" />
+          <img class="trash-img" src="./src/textures/plastic_red.png" />
+        </div>
+        <div class="indiv-bin">
+          <img class="bin-img" src="./src/textures/green_trash_can.png" />
+          <img class="trash-img" src="./src/textures/glass_beer_bottle.png" />
+          <img class="trash-img" src="./src/textures/glass_jar.png" />
+          <img class="trash-img" src="./src/textures/glass_soda_bottle.png" />
+        </div>
+        <div class="indiv-bin">
+          <img class="bin-img" src="./src/textures/brown_trash_can.png" />
+          <img class="trash-img" src="./src/textures/trash_cup.png" />
+          <img class="trash-img" src="./src/textures/trash_spray_can.png" />
+          <img class="trash-img" src="./src/textures/trash_mug.png" />
+        </div>
+      </section>
+    </main>
   </body>
 </html>
