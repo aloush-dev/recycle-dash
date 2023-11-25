@@ -1,4 +1,4 @@
-import { HEIGHT, TRASH_LOADING_WIDTH } from "../globalConstants";
+import { HEIGHT, TRASH_LOADING_WIDTH, WIDTH } from "../globalConstants";
 import {
   BeerBottle,
   CardboardBox,
@@ -33,8 +33,8 @@ export default class TrashGenerator {
   ];
 
   static random() {
-    const x = Math.floor(Math.random() * TRASH_LOADING_WIDTH);
-    const y = Math.floor(Math.random() * HEIGHT);
+    const x = Math.random() * WIDTH;
+    const y = (Math.random() * HEIGHT) / 4;
     const index = Math.floor(Math.random() * this.trash.length);
     const newTrash = this.trash[index];
     return newTrash(x, y);

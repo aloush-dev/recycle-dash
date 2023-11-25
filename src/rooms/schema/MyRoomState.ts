@@ -5,7 +5,7 @@ import { TrashCan } from "../../Trash/TrashCans";
 export class Player extends Schema {
   @type("number") x: number;
   @type("number") y: number;
-  playerNumber: number;
+  @type("number") playerNumber: number;
   @type("string") animation: string | null;
 }
 export class MyRoomState extends Schema {

@@ -86,8 +86,8 @@ export class MyRoom extends Room<MyRoomState> {
   private setUpCans() {
     const locations: { x: number; y: number }[] = [];
     for (let i = 4; i > 0; i--) {
-      const x = WIDTH / 2;
-      const y = i * 100;
+      const x = (i * WIDTH) / 5;
+      const y = (HEIGHT * 3) / 5;
       locations.push({ x, y });
     }
     locations.sort(() => Math.random() - 0.5);
