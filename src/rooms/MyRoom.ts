@@ -1,11 +1,34 @@
-import { Room, Client } from '@colyseus/core';
-import { MyRoomState, Player } from './schema/MyRoomState';
+import { Room, Client } from "@colyseus/core";
+import { MyRoomState, Player } from "./schema/MyRoomState";
+
+const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 export class MyRoom extends Room<MyRoomState> {
   maxClients = 4;
   update: any; // NOT GOOD PLS FIX
+  LOBBY_CHANNEL = "$mylobby";
 
-  onCreate(options: any) {
+  generateRoomIdSingle(): string {
+    let result = "";
+    for (let i = 0; i < 4; i++) {
+      result += LETTERS.charAt(Math.floor(Math.random() * LETTERS.length));
+    }
+    return result;
+  }
+
+  async generateRoomId(): Promise<string> {
+    const currentIds = await this.presence.smembers(this.LOBBY_CHANNEL);
+    let id;
+    do {
+      id = this.generateRoomIdSingle();
+    } while (currentIds.includes(id));
+
+    await this.presence.sadd(this.LOBBY_CHANNEL, id);
+    return id;
+  }
+
+  async onCreate(options: any) {
+    this.roomId = await this.generateRoomId();
     this.setState(new MyRoomState());
 
     this.onMessage(0, (client, input) => {
@@ -33,7 +56,7 @@ export class MyRoom extends Room<MyRoomState> {
   }
 
   onJoin(client: Client, options: any) {
-    console.log(client.sessionId, 'joined!');
+    console.log(client.sessionId, "joined!");
     const mapWidth = 800;
     const mapHeight = 600;
 
@@ -44,11 +67,12 @@ export class MyRoom extends Room<MyRoomState> {
   }
 
   onLeave(client: Client, consented: boolean) {
-    console.log(client.sessionId, 'left!');
+    console.log(client.sessionId, "left!");
     this.state.players.delete(client.sessionId);
   }
 
-  onDispose() {
-    console.log('room', this.roomId, 'disposing...');
+  async onDispose() {
+    this.presence.srem(this.LOBBY_CHANNEL, this.roomId);
+    console.log("room", this.roomId, "disposing...");
   }
 }

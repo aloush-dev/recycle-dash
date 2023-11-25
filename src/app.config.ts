@@ -1,18 +1,20 @@
-import config from '@colyseus/tools';
-import { monitor } from '@colyseus/monitor';
-import { playground } from '@colyseus/playground';
+import config from "@colyseus/tools";
+import { monitor } from "@colyseus/monitor";
+import { playground } from "@colyseus/playground";
 
 /**
  * Import your Room files
  */
-import { MyRoom } from './rooms/MyRoom';
+import { MyRoom } from "./rooms/MyRoom";
+import { LobbyRoom } from "colyseus";
 
 export default config({
   initializeGameServer: gameServer => {
     /**
      * Define your room handlers:
      */
-    gameServer.define('my_room', MyRoom);
+    gameServer.define("lobby", LobbyRoom);
+    gameServer.define("my_room", MyRoom).enableRealtimeListing();
   },
 
   initializeExpress: app => {
@@ -20,7 +22,7 @@ export default config({
      * Bind your custom express routes here:
      * Read more: https://expressjs.com/en/starter/basic-routing.html
      */
-    app.get('/hello_world', (req, res) => {
+    app.get("/hello_world", (req, res) => {
       res.send("It's time to kick ass and chew bubblegum!");
     });
 
@@ -28,8 +30,8 @@ export default config({
      * Use @colyseus/playground
      * (It is not recommended to expose this route in a production environment)
      */
-    if (process.env.NODE_ENV !== 'production') {
-      app.use('/', playground);
+    if (process.env.NODE_ENV !== "production") {
+      app.use("/", playground);
     }
 
     /**
@@ -37,7 +39,11 @@ export default config({
      * It is recommended to protect this route with a password
      * Read more: https://docs.colyseus.io/tools/monitor/#restrict-access-to-the-panel-using-a-password
      */
-    app.use('/colyseus', monitor());
+    app.use("/colyseus", monitor());
+
+    app.get("/audio/welcome_screen", (req, res) => {
+      return res.sendFile(__dirname + "/assests/welcome_screen.mp3");
+    });
   },
 
   beforeListen: () => {

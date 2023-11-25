@@ -1,15 +1,20 @@
-import Phaser from 'phaser';
+import Phaser from "phaser";
 
 export default class PreLoader extends Phaser.Scene {
   constructor() {
-    super('preloader');
+    super("preloader");
   }
 
   preload() {
     this.load.spritesheet(
-      'playerSheet',
-      'https://i.ibb.co/rbjPCCj/Characters-V3-Colour-3.png',
+      "playerSheet",
+      "https://i.ibb.co/rbjPCCj/Characters-V3-Colour-3.png",
       { frameWidth: 80, frameHeight: 80 }
+    );
+
+    this.load.audio(
+      "backgroundMusic",
+      "http://localhost:2567/audio/welcome_screen"
     );
   }
   create() {
@@ -77,8 +82,6 @@ export default class PreLoader extends Phaser.Scene {
         repeat: -1,
       });
 
- 
-
       this.anims.create({
         key: `right-walk-${i}`,
         frames: this.anims.generateFrameNumbers(`playerSheet`, {
@@ -104,7 +107,6 @@ export default class PreLoader extends Phaser.Scene {
       startPositions.rightWalkEnd += 12;
     }
 
-    this.scene.start('welcome');
-
+    this.scene.start("welcome");
   }
 }

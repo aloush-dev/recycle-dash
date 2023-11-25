@@ -1,5 +1,5 @@
-import Phaser from 'phaser';
-import { Client, Room } from 'colyseus.js';
+import Phaser from "phaser";
+import { Client, Room } from "colyseus.js";
 
 type Player = {
   x: number;
@@ -10,7 +10,7 @@ type Player = {
 export default class Game extends Phaser.Scene {
   state: any;
   constructor() {
-    super('game');
+    super("game");
   }
 
   currentPlayer!: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
@@ -26,34 +26,40 @@ export default class Game extends Phaser.Scene {
   /** @type {Phaser.Types.Input.Keyboard.CursorKeys} */
   cursorKeys!: Phaser.Types.Input.Keyboard.CursorKeys;
 
+  preload() {
+    this.load.image("gameBackground", "https://i.ibb.co/khH5sZ0/map.png");
+  }
+
   init() {
     this.cursorKeys = this.input.keyboard!.createCursorKeys();
   }
-  client = new Client('ws://localhost:2567');
+  client = new Client("ws://localhost:2567");
   room!: Room;
 
   playerEntities: { [sessionId: string]: any } = {};
 
   async create() {
-    console.log('Joining Room');
+    const bg = this.add.sprite(0, 0, "gameBackground");
+    bg.setOrigin(0, 0);
+    console.log("Joining Room");
     try {
-      this.room = await this.client.joinOrCreate('my_room');
+      this.room = await this.client.joinOrCreate("my_room");
 
       this.room.state.players.onAdd(
         (player: Player, sessionId: string | number) => {
           console.log(
-            'A player has joined! Their unique session id is',
+            "A player has joined! Their unique session id is",
             sessionId
           );
           console.log(
-            'Players connected: ',
+            "Players connected: ",
             Object.keys(this.playerEntities).length + 1
           );
           const playerNum = Object.keys(this.playerEntities).length;
           const sprites = [0, 12, 24, 36];
 
           const entity = this.physics.add
-            .sprite(player.x, player.y, 'playerSheet', sprites[playerNum])
+            .sprite(player.x, player.y, "playerSheet", sprites[playerNum])
             .setOffset(player.x, player.y);
           this.playerEntities[sessionId] = entity;
           this.playerEntities[sessionId].playerNumber = playerNum;
@@ -76,14 +82,14 @@ export default class Game extends Phaser.Scene {
             // all remote players are here!
             // (same as before, we are going to interpolate remote players)
             player.onChange(() => {
-              entity.setData('serverX', player.x);
-              entity.setData('serverY', player.y);
+              entity.setData("serverX", player.x);
+              entity.setData("serverY", player.y);
             });
           }
 
           player.onChange(() => {
-            entity.setData('serverX', player.x);
-            entity.setData('serverY', player.y);
+            entity.setData("serverX", player.x);
+            entity.setData("serverY", player.y);
           });
         }
       );
@@ -138,8 +144,8 @@ export default class Game extends Phaser.Scene {
         const currentAnimKey = this.currentPlayer.anims.currentAnim?.key;
 
         // Check if the player is not already playing an idle animation
-        if (currentAnimKey && !currentAnimKey.includes('idle')) {
-          const parts = currentAnimKey.split('-');
+        if (currentAnimKey && !currentAnimKey.includes("idle")) {
+          const parts = currentAnimKey.split("-");
           const direction = parts[0];
           this.currentPlayer.play(`${direction}-idle-${animNum}`);
         }
