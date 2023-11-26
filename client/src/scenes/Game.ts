@@ -75,66 +75,12 @@ export default class Game extends Phaser.Scene {
   private handleClock(value: number) {
     console.log(value);
   }
-  private createCan(trashCanItem: any, key: string) {
-    const rectWidth = 32;
-    const rectHeight = 32;
 
-    const graphics = this.add.graphics({ fillStyle: { alpha: 0 } });
-    const rect = new Phaser.Geom.Rectangle(
-      trashCanItem.x,
-      trashCanItem.y,
-      rectWidth,
-      rectHeight
-    );
-    graphics.fillRectShape(rect);
-
-    const imageX = trashCanItem.x + rectWidth / 2;
-    const imageY = trashCanItem.y + rectHeight / 2;
-
-    const image = this.add.image(imageX, imageY, trashCanItem.type);
-
-    this.trashCanEntities[key] = graphics;
-  }
-  private createTrash(trashItem: any, key: string) {
-    const rectWidth = 32;
-    const rectHeight = 32;
-
-    const graphics = this.add.graphics({ fillStyle: { alpha: 0 } });
-    const rect = new Phaser.Geom.Rectangle(
-      trashItem.x,
-      trashItem.y,
-      rectWidth,
-      rectHeight
-    );
-    graphics.fillRectShape(rect);
-
-    const imageX = trashItem.x + rectWidth / 2;
-    const imageY = trashItem.y + rectHeight / 2;
-
-    const image = this.physics.add.image(imageX, imageY, trashItem.name);
-    image.setInteractive(); // if needed
-    Object.values(this.playerEntities).forEach((player: PlayerWithPhysics) => {
-      this.physics.add.collider(player, image, this.handleTrashCollision);
-    });
-    this.trashEntities[trashItem.name] = image;
-  }
-  private handleTrashCollision() {
-    console.log("trash collision");
-  }
-  async create() {
+  room!: Room;
+  async create(data) {
+    console.log(data);
     const bg = this.add.sprite(0, 0, "gameBackground");
     bg.setOrigin(0, 0);
-
-    // const timerLabel = this.add
-    //   .text(1000 * 0.5, 50, "60", {
-    //     fontSize: 48,
-    //     backgroundColor: "#e3d081",
-    //     color: "#b33951",
-    //     padding: { x: 12, y: 12 },
-    //   })
-    //   .setOrigin(0.5);
-    // this.countdown = new CountdownController(this, timerLabel);
-    // this.countdown.start(() => this.scene.switch("endgame", this.endGameStats));
 
     try {
       this.room = await this.client.joinOrCreate("my_room");
@@ -290,8 +236,6 @@ export default class Game extends Phaser.Scene {
   }
 
   private createTrash(trashItem: any, key: string) {
-    console.log(trashItem);
-
     const rectWidth = 32;
     const rectHeight = 32;
 
