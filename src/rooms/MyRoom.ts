@@ -6,11 +6,17 @@ import {
   PaperCan,
   PlasticCan,
 } from "../Trash/TrashCans";
-import { HEIGHT, TRASH_FOR_DIFFICULTY, WIDTH } from "../globalConstants";
+import {
+  HEIGHT,
+  PLAYER_SPAWN_LOCATIONS,
+  TRASH_FOR_DIFFICULTY,
+  WIDTH,
+} from "../globalConstants";
 import TrashGenerator from "../Trash/TrashGenorator";
 
 const LETTERS = "ABCDEFGHIJKLLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 type GameState = "LOBBY" | "EASY" | "MEDIUM" | "HARD" | "COMPLETE";
+type PlayerIndex = keyof typeof PLAYER_SPAWN_LOCATIONS;
 export class MyRoom extends Room<MyRoomState> {
   maxClients = 4;
   update: any; // NOT GOOD PLS FIX
@@ -72,14 +78,17 @@ export class MyRoom extends Room<MyRoomState> {
     });
     1;
   }
+
   onJoin(client: Client, options: any) {
     console.log(client.sessionId, "joined!");
     const mapWidth = WIDTH;
     const mapHeight = HEIGHT;
-
+    const playerNumber = (this.state.players.size + 1) as PlayerIndex;
+    console.log(playerNumber);
+    const spawn = PLAYER_SPAWN_LOCATIONS[playerNumber];
     const player = new Player();
-    player.x = 200;
-    player.y = 150;
+    player.x = spawn.x;
+    player.y = spawn.y;
     this.state.players.set(client.sessionId, player);
   }
 

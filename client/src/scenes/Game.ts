@@ -110,7 +110,7 @@ export default class Game extends Phaser.Scene {
           );
 
           const playerNum = Object.keys(this.playerEntities).length;
-          const sprites = [24, 36, 48, 60];
+          const sprites = [25, 37, 49, 61];
 
           const entity = this.physics.add.sprite(
             player.x,

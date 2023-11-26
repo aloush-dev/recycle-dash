@@ -15,3 +15,10 @@ export const TRASH_FOR_DIFFICULTY = {
   MEDIUM: 40,
   HARD: 60,
 };
+const STARTING_RANK = 750;
+export const PLAYER_SPAWN_LOCATIONS = {
+  1: { x: 145, y: STARTING_RANK },
+  2: { x: 340, y: STARTING_RANK },
+  3: { x: 530, y: STARTING_RANK },
+  4: { x: 720, y: STARTING_RANK },
+};
