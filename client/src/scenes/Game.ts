@@ -187,7 +187,7 @@ export default class Game extends Phaser.Scene {
     this.trashPayLoad.right = this.cursorKeys.right.isDown;
     this.trashPayLoad.up = this.cursorKeys.up.isDown;
     this.trashPayLoad.down = this.cursorKeys.down.isDown;
-    this.trashPayLoad.trashItem = this.activeTrash;
+    this.trashPayLoad.trashItem = this.activeTrash?.data?.list.id;
 
     this.inputPayload.left = this.cursorKeys.left.isDown;
     this.inputPayload.right = this.cursorKeys.right.isDown;
@@ -236,15 +236,11 @@ export default class Game extends Phaser.Scene {
     if (spaceJustPressed && this.activeTrash) {
       this.activeTrash.pickedUp = true;
       this.currentPlayer.holding = true;
-      console.log(this.activeTrash.trashType);
-      console.log(this.activeTrash.pickedUp);
-      console.log("x pos : ", this.activeTrash.x);
-      console.log("y pos : ", this.activeTrash.y);
+
       this.activeTrash.setScale(0.5);
 
       this.activeTrash.x = this.currentPlayer.x;
       this.activeTrash.y = this.currentPlayer.y;
-      console.log("gotcha");
     }
     this.room.send("updatePlayer", this.inputPayload);
     this.room.send("updateTrash", this.trashPayLoad);
@@ -263,6 +259,13 @@ export default class Game extends Phaser.Scene {
         if (animation) {
           entity.play(animation, true);
         }
+      }
+
+      for (const trash in this.trashEntities) {
+        const trashEntity = this.trashEntities[trash];
+        const { serverX, serverY } = trashEntity.data.values;
+        trashEntity.x = Phaser.Math.Linear(trashEntity.x, serverX, 0.4);
+        trashEntity.y = Phaser.Math.Linear(trashEntity.y, serverY, 0.4);
       }
     }
   }
@@ -323,6 +326,11 @@ export default class Game extends Phaser.Scene {
         this
       );
     });
+    image.setData("id", trashItem.uniqueId);
+    trashItem.onChange(() => {
+      image.setData("serverX", trashItem.x);
+      image.setData("serverY", trashItem.y);
+    });
     this.trashEntities[trashItem.name] = image;
   }
   private handleTrashCollision(player, trash) {
@@ -361,6 +369,7 @@ export default class Game extends Phaser.Scene {
       } else {
         console.log(`Oh No! You put ${holding} in a ${bin} bin!`);
       }
+      this.room.send("deleteTrash", this.activeTrash?.data?.list.id);
       this.activeTrash.destroy();
 
       this.activeTrash = null;

@@ -64,9 +64,37 @@ export class MyRoom extends Room<MyRoomState> {
         player.y += velocity;
       }
     });
+
     this.onMessage("updateTrash", (client, input) => {
-      console.log(input.trashItem);
+      const { left, right, up, down, trashItem } = input;
+      const item = this.state.trash.filter(trash => {
+        return trash.uniqueId === trashItem;
+      })[0];
+
+      const velocity = 2;
+      if (item && left) {
+        item.x -= velocity;
+      }
+      if (item && right) {
+        item.x += velocity;
+      }
+      if (item && up) {
+        item.y -= velocity;
+      }
+      if (item && down) {
+        item.y += velocity;
+      }
     });
+    this.onMessage("deleteTrash", (client, input) => {
+      console.log(input, "delete me");
+      // const indexToRemove = this.state.trash.findIndex(item => {
+      //   item.uniqueId === input;
+      // });
+      // if (indexToRemove !== -1) {
+      //   this.state.trash.splice(indexToRemove, 1);
+      // }
+    });
+
     this.onMessage("setDifficulty", (client, difficulty) => {
       if (this.gameState !== "LOBBY") return;
       this.gameState = difficulty as GameState;
@@ -95,6 +123,7 @@ export class MyRoom extends Room<MyRoomState> {
     clearInterval(this.clockInterval);
     console.log("room", this.roomId, "disposing...");
   }
+
   private setUpCans() {
     const locations: { x: number; y: number }[] = [];
     for (let i = 4; i > 0; i--) {
