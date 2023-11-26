@@ -27,7 +27,7 @@ To play "Recycle-Dash", follow these steps:
 2. Navigate to the game directory:`cd trash-collection-game`
 3. Install dependencies: `npm install && cd client && npm install && cd ..`
 4. Start Server: `npm start`
-   5: Start Client: `cd client && npm start`
+5. Start Client: `cd client && npm start`
 
 ## Technologies Used
 
