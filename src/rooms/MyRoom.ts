@@ -47,6 +47,12 @@ export class MyRoom extends Room<MyRoomState> {
     this.setUpCans();
     this.setUpTrash();
 
+    this.clock.start();
+
+    this.onMessage("action", (client, message) => {
+      this.broadcast("hello");
+    });
+
     this.onMessage("updatePlayer", (client, input) => {
       const player = this.state.players.get(client.sessionId);
       const velocity = 2;

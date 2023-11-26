@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import EndGame from "./scenes/EndGame";
 import Game from "./scenes/Game";
 import PreLoader from "./scenes/Preloader";
 import Welcome from "./scenes/Welcome";
@@ -17,7 +18,7 @@ const config = {
       gravity: { y: 0 },
     },
   },
-  scene: [PreLoader, Welcome, Lobby, Game],
+  scene: [PreLoader, Welcome, Lobby, Game, EndGame],
 };
 
 export default new Phaser.Game(config);

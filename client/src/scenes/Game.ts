@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { Client, Room } from "colyseus.js";
+import CountdownController from "./CountdownController";
 
 type Player = {
   x: number;
@@ -53,10 +54,11 @@ export default class Game extends Phaser.Scene {
 
   cursorKeys!: Phaser.Types.Input.Keyboard.CursorKeys;
 
+  countdown: any;
+
   preload() {
     this.load.image("gameBackground", "https://i.ibb.co/khH5sZ0/map.png");
   }
-  room!: Room;
 
   init() {
     this.cursorKeys = this.input.keyboard!.createCursorKeys();
@@ -88,8 +90,6 @@ export default class Game extends Phaser.Scene {
     this.trashCanEntities[key] = graphics;
   }
   private createTrash(trashItem: any, key: string) {
-    console.log(trashItem);
-
     const rectWidth = 32;
     const rectHeight = 32;
 
@@ -110,10 +110,25 @@ export default class Game extends Phaser.Scene {
     this.trashEntities[trashItem.name] = graphics;
   }
 
+  endGameStats = {
+    players: this.playerEntities,
+  };
+
   async create() {
     const bg = this.add.sprite(0, 0, "gameBackground");
     bg.setOrigin(0, 0);
-    console.log("Joining Room");
+
+    // const timerLabel = this.add
+    //   .text(1000 * 0.5, 50, "60", {
+    //     fontSize: 48,
+    //     backgroundColor: "#e3d081",
+    //     color: "#b33951",
+    //     padding: { x: 12, y: 12 },
+    //   })
+    //   .setOrigin(0.5);
+    // this.countdown = new CountdownController(this, timerLabel);
+    // this.countdown.start(() => this.scene.switch("endgame", this.endGameStats));
+
     try {
       this.room = await this.client.joinOrCreate("my_room");
 
@@ -187,6 +202,14 @@ export default class Game extends Phaser.Scene {
     if (!this.room) {
       return;
     }
+
+    // this.countdown.update();
+
+    this.room.onMessage("action", (message: any) => {
+      console.log("MESSAGE FROM SERVER");
+      console.log(message);
+    });
+
     const animNum: number = this.currentPlayer.playerNumber || 0;
 
     const velocity = 2;
