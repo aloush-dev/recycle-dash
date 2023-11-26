@@ -60,26 +60,15 @@ export default class Game extends Phaser.Scene {
 
   currentPlayer!: PlayerWithPhysics;
   remoteRef!: Phaser.GameObjects.Rectangle;
-
-  inputPayload: InputPayloadType = {
-    left: false,
-    right: false,
-    up: false,
-    down: false,
-    animation: "down-idle-0",
-  };
-  trashPayLoad: TrashInputPayLoadType = {
-    left: false,
-    right: false,
-    up: false,
-    down: false,
-    trashItem: null,
-  };
   cursorKeys!: Phaser.Types.Input.Keyboard.CursorKeys;
 
   countdown: any;
   canBeCarried: boolean = false;
-  activeTrash!: Trash | null;
+  activeTrash!:
+    | (Trash & { [key: string]: (num?: number) => void } & {
+        data: { list: { [key: string]: string } };
+      })
+    | null;
   preload() {
     this.load.image(
       "gameBackground",
@@ -235,44 +224,45 @@ export default class Game extends Phaser.Scene {
 
     this.updateActiveTrash();
     const animNum: number = this.currentPlayer.playerNumber || 0;
-
-    const velocity = 2;
-
-    this.inputPayload.left = this.cursorKeys.left.isDown;
-    this.inputPayload.right = this.cursorKeys.right.isDown;
-    this.inputPayload.up = this.cursorKeys.up.isDown;
-    this.inputPayload.down = this.cursorKeys.down.isDown;
-
-    this.inputPayload.animation =
-      this.currentPlayer.anims.currentAnim?.key || null;
-
-    if (this.inputPayload.left) {
-      this.currentPlayer.play(`left-walk-${animNum}`, true);
-      this.currentPlayer.x -= velocity;
-    } else if (this.inputPayload.right) {
-      this.currentPlayer.play(`right-walk-${animNum}`, true);
-      this.currentPlayer.x += velocity;
+    // If the player is not moving, play idle animation
+    if (
+      !this.cursorKeys.left.isDown &&
+      !this.cursorKeys.right.isDown &&
+      !this.cursorKeys.up.isDown &&
+      !this.cursorKeys.down.isDown
+    ) {
+      const currentAnimKey = this.currentPlayer.anims.currentAnim?.key;
+      if (currentAnimKey && !currentAnimKey.includes("idle")) {
+        const parts = currentAnimKey.split("-");
+        const direction = parts[0];
+        this.currentPlayer.play(`${direction}-idle-${animNum}`);
+      }
     }
 
-    if (this.inputPayload.up) {
-      this.currentPlayer.play(`up-walk-${animNum}`, true);
-      this.currentPlayer.y -= velocity;
-    } else if (this.inputPayload.down) {
-      this.currentPlayer.play(`down-walk-${animNum}`, true);
-      this.currentPlayer.y += velocity;
-    } else {
-      this.currentPlayer.setVelocity(0, 0);
+    // Send updated player state to the server
+    this.room.send("updatePlayer", {
+      x: this.currentPlayer.x,
+      y: this.currentPlayer.y,
+      animation: this.currentPlayer.anims.currentAnim?.key,
+    });
 
-      if (!this.inputPayload.left && !this.inputPayload.right) {
-        const currentAnimKey = this.currentPlayer.anims.currentAnim?.key;
+    // Update other players based on server data
+    for (let sessionId in this.playerEntities) {
+      if (sessionId === this.room.sessionId) {
+        continue;
+      }
 
-        if (currentAnimKey && !currentAnimKey.includes("idle")) {
-          const parts = currentAnimKey.split("-");
-          const direction = parts[0];
-          this.currentPlayer.play(`${direction}-idle-${animNum}`);
+      const entity = this.playerEntities[sessionId];
+      if (entity) {
+        const { serverX, serverY, animation } = entity.data.values;
+        entity.x = Phaser.Math.Linear(entity.x, serverX, 0.4);
+        entity.y = Phaser.Math.Linear(entity.y, serverY, 0.4);
+        if (animation) {
+          entity.play(animation, true);
         }
       }
     }
+
     const spaceJustPressed = Phaser.Input.Keyboard.JustUp(
       this.cursorKeys.space
     );
@@ -287,8 +277,6 @@ export default class Game extends Phaser.Scene {
       this.activeTrash.x = this.currentPlayer.x;
       this.activeTrash.y = this.currentPlayer.y;
     }
-
-    this.room.send("updatePlayer", this.inputPayload);
 
     this.room.send("updateTrash", {
       trashId: this.activeTrash?.data.list.id,
@@ -425,7 +413,7 @@ export default class Game extends Phaser.Scene {
       if (correctBin[holding] === bin) {
         console.log("Yay! Correct bin!!");
         this.room.send("deleteTrash", this.activeTrash?.data.list.id);
-        this.activeTrash.destroy();
+        this.activeTrash && this.activeTrash.destroy();
         this.activeTrash = null;
         this.currentPlayer.holding = false;
       } else {
