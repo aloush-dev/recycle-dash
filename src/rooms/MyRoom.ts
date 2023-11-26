@@ -13,7 +13,7 @@ const LETTERS = "ABCDEFGHIJKLLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 type GameState = "LOBBY" | "EASY" | "MEDIUM" | "HARD" | "COMPLETE";
 export class MyRoom extends Room<MyRoomState> {
   maxClients = 4;
-  update: any; // NOT GOOD PLS FIX
+  update: any;
   LOBBY_CHANNEL = "$mylobby";
   set gameState(gameInProgress: GameState) {
     this.state.gameInProgress = gameInProgress;
@@ -67,31 +67,34 @@ export class MyRoom extends Room<MyRoomState> {
 
     this.onMessage("updateTrash", (client, input) => {
       const { trashId, trashX, trashY } = input;
-      const item = this.state.trash.filter(trash => {
+
+      const item = this.state.trash.find(trash => {
         return trash.uniqueId === trashId;
-      })[0];
+      });
 
       if (item) {
         item.x = trashX;
         item.y = trashY;
       }
+      this.broadcast("updateTrashPosition", { trashId, trashX, trashY });
     });
 
     this.onMessage("deleteTrash", (client, input) => {
-      console.log(input, "delete me");
-      // const indexToRemove = this.state.trash.findIndex(item => {
-      //   item.uniqueId === input;
-      // });
-      // if (indexToRemove !== -1) {
-      //   this.state.trash.splice(indexToRemove, 1);
-      // }
+      const indexToRemove = this.state.trash.findIndex((item: any) => {
+        return item.uniqueId === input;
+      });
+      console.log(input, indexToRemove);
+
+      if (indexToRemove !== -1) {
+        this.state.trash.splice(indexToRemove, 1);
+      }
+      this.broadcast("removeTrash", input);
     });
 
     this.onMessage("setDifficulty", (client, difficulty) => {
       if (this.gameState !== "LOBBY") return;
       this.gameState = difficulty as GameState;
       this.setUpTrash();
-      console.log(this.state.trash.length);
     });
     1;
   }

@@ -7,10 +7,6 @@ export default class Welcome extends Phaser.Scene {
   }
 
   preload() {
-    // this.load.audio(
-    //   "backgroundMusic",
-    //   "http://localhost:2567/audio/welcome_screen"
-    // );
     this.load.image(
       "welcomeBackground",
       "https://i.ibb.co/vQKgfJp/recycle-dash-background.png"
@@ -28,8 +24,6 @@ export default class Welcome extends Phaser.Scene {
   hardGameButton() {
     this.scene.start("game", { difficulty: "HARD" });
   }
-
-  // client = new Client("ws://localhost:2567");
 
   async create() {
     const bg = this.add.sprite(0, 0, "welcomeBackground");
@@ -92,8 +86,5 @@ export default class Welcome extends Phaser.Scene {
 
     hardButton.setInteractive({ useHandCursor: true });
     hardButton.on("pointerdown", () => this.hardGameButton());
-
-    // const backgroundMuisc = this.sound.add("backgroundMusic", { loop: true });
-    // backgroundMuisc.play();
   }
 }

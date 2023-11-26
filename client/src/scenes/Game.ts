@@ -102,7 +102,6 @@ export default class Game extends Phaser.Scene {
 
   room!: Room;
   async create(data: { difficulty: string }) {
-    console.log(data);
     const bg = this.add.sprite(0, 0, "gameBackground");
     bg.setOrigin(0, 0);
     try {
@@ -115,7 +114,20 @@ export default class Game extends Phaser.Scene {
       this.room.state.trash.onAdd((trashItem: Trash, key: string) => {
         this.createTrash(trashItem, key);
       });
-
+      this.room.onMessage(
+        "updateTrashPosition",
+        ({ trashId, trashX, trashY }) => {
+          this.updateTrashPosition(trashId, trashX, trashY);
+        }
+      );
+      this.room.onMessage("removeTrash", (id: string) => {
+        for (const key in this.trashEntities) {
+          const item = this.trashEntities[key];
+          if (item.uniqueId === id) {
+            delete this.trashEntities[key];
+          }
+        }
+      });
       this.room.state.players.onAdd(
         (player: Player, sessionId: string | number) => {
           console.log(
@@ -143,8 +155,6 @@ export default class Game extends Phaser.Scene {
           if (sessionId === this.room.sessionId) {
             this.currentPlayer = entity;
           } else {
-            // all remote players are here!
-
             player.onChange(() => {
               entity.setData("serverX", player.x);
               entity.setData("serverY", player.y);
@@ -183,12 +193,6 @@ export default class Game extends Phaser.Scene {
 
     const velocity = 2;
 
-    // this.trashPayLoad.left = this.cursorKeys.left.isDown;
-    // this.trashPayLoad.right = this.cursorKeys.right.isDown;
-    // this.trashPayLoad.up = this.cursorKeys.up.isDown;
-    // this.trashPayLoad.down = this.cursorKeys.down.isDown;
-    // this.trashPayLoad.trashItem = this.activeTrash?.data?.list.id;
-
     this.inputPayload.left = this.cursorKeys.left.isDown;
     this.inputPayload.right = this.cursorKeys.right.isDown;
     this.inputPayload.up = this.cursorKeys.up.isDown;
@@ -200,28 +204,23 @@ export default class Game extends Phaser.Scene {
     if (this.inputPayload.left) {
       this.currentPlayer.play(`left-walk-${animNum}`, true);
       this.currentPlayer.x -= velocity;
-      // this.activeTrash?.pickedUp ? (this.activeTrash.x -= velocity) : null;
     } else if (this.inputPayload.right) {
       this.currentPlayer.play(`right-walk-${animNum}`, true);
       this.currentPlayer.x += velocity;
-      // this.activeTrash?.pickedUp ? (this.activeTrash.x += velocity) : null;
     }
 
     if (this.inputPayload.up) {
       this.currentPlayer.play(`up-walk-${animNum}`, true);
       this.currentPlayer.y -= velocity;
-      // this.activeTrash?.pickedUp ? (this.activeTrash.y -= velocity) : null;
     } else if (this.inputPayload.down) {
       this.currentPlayer.play(`down-walk-${animNum}`, true);
       this.currentPlayer.y += velocity;
-      // this.activeTrash?.pickedUp ? (this.activeTrash.y += velocity) : null;
     } else {
       this.currentPlayer.setVelocity(0, 0);
 
       if (!this.inputPayload.left && !this.inputPayload.right) {
         const currentAnimKey = this.currentPlayer.anims.currentAnim?.key;
 
-        // Check if the player is not already playing an idle animation
         if (currentAnimKey && !currentAnimKey.includes("idle")) {
           const parts = currentAnimKey.split("-");
           const direction = parts[0];
@@ -245,8 +244,9 @@ export default class Game extends Phaser.Scene {
     }
 
     this.room.send("updatePlayer", this.inputPayload);
+
     this.room.send("updateTrash", {
-      trashId: this.activeTrash?.data.id,
+      trashId: this.activeTrash?.data.list.id,
       trashX: this.activeTrash?.x,
       trashY: this.activeTrash?.y,
     });
@@ -266,15 +266,6 @@ export default class Game extends Phaser.Scene {
           entity.play(animation, true);
         }
       }
-
-      // for (const trash in this.trashEntities) {
-      //   const trashEntity = this.trashEntities[trash];
-      //   if (trashEntity && trashEntity.data) {
-      //     const { serverX, serverY } = trashEntity.data.values;
-      //     trashEntity.x = Phaser.Math.Linear(trashEntity.x, serverX, 0.4);
-      //     trashEntity.y = Phaser.Math.Linear(trashEntity.y, serverY, 0.4);
-      //   }
-      // }
     }
   }
 
@@ -306,7 +297,17 @@ export default class Game extends Phaser.Scene {
     });
     this.trashCanEntities[key] = graphics;
   }
+  private updateTrashPosition(trashId: string, newX: number, newY: number) {
+    // Find the trash object. This depends on how you're storing them.
+    const trash = Object.values(this.trashEntities).find(
+      (t: any) => t.uniqueId === trashId
+    );
 
+    if (trash) {
+      trash.x = newX;
+      trash.y = newY;
+    }
+  }
   private createTrash(trashItem: any, key: string) {
     const rectWidth = 32;
     const rectHeight = 32;
@@ -319,12 +320,16 @@ export default class Game extends Phaser.Scene {
       rectHeight
     );
     graphics.fillRectShape(rect);
-
     const imageX = trashItem.x + rectWidth / 2;
     const imageY = trashItem.y + rectHeight / 2;
 
     const image = this.physics.add.image(imageX, imageY, trashItem.name);
-    image.setInteractive(); // if needed
+
+    trashItem.onRemove(() => {
+      image.destroy();
+    });
+
+    image.setInteractive();
     Object.values(this.playerEntities).forEach((player: PlayerWithPhysics) => {
       this.physics.add.collider(
         player,
@@ -335,29 +340,26 @@ export default class Game extends Phaser.Scene {
       );
     });
     image.setData("id", trashItem.uniqueId);
+    console.log(trashItem.uniqueId, "id");
     trashItem.onChange(() => {
-      console.log(trashItem.x, trashItem.y);
       image.x = trashItem.x;
       image.y = trashItem.y;
-      // image.setData("serverX", trashItem.x);
-      // image.setData("serverY", trashItem.y);
     });
     this.trashEntities[trashItem.name] = image;
   }
-  private handleTrashCollision(player, trash) {
-    // in here will need to set something on trash to be true to complete a check in the update controllers to allow user to grab that item
-
+  private handleTrashCollision(player: any, trash: any) {
     if (this.activeTrash) {
       return;
     }
     this.activeTrash = trash;
     player.holdingType = trash.texture.key;
-    // console.log(trash);
   }
 
-  private handleTrashCanCollision(player, trashCan) {
+  private handleTrashCanCollision(player: any, trashCan: any) {
     console.log("found a bin");
-    const correctBin = {
+    const correctBin: {
+      [key: string]: string;
+    } = {
       "beer-bottle": "glass",
       "cardboard-box": "paper",
       "ceramic-mug": "non-recyclable",
@@ -373,18 +375,17 @@ export default class Game extends Phaser.Scene {
     };
     if (this.currentPlayer.holding) {
       const bin = trashCan.texture.key;
-
-      const holding = player.holdingType;
+      const holding: string = player.holdingType;
+      console.log(correctBin[holding], bin);
       if (correctBin[holding] === bin) {
         console.log("Yay! Correct bin!!");
+        this.room.send("deleteTrash", this.activeTrash?.data.list.id);
+        this.activeTrash.destroy();
+        this.activeTrash = null;
+        this.currentPlayer.holding = false;
       } else {
         console.log(`Oh No! You put ${holding} in a ${bin} bin!`);
       }
-      this.room.send("deleteTrash", this.activeTrash?.data?.list.id);
-      this.activeTrash.destroy();
-
-      this.activeTrash = null;
-      this.currentPlayer.holding = false;
     }
   }
   private updateActiveTrash() {
