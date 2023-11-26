@@ -11,7 +11,7 @@ export const NON_RECYCLABLE_IMG_URL =
 export const INITIAL_TRASH = 10;
 
 export const TRASH_FOR_DIFFICULTY = {
-  EASY: 20,
+  EASY: 10,
   MEDIUM: 40,
   HARD: 60,
 };

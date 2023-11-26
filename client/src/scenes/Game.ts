@@ -523,7 +523,7 @@ export default class Game extends Phaser.Scene {
     player.holdingType = trash.texture.key;
   }
   private makeWall = (x: number, y: number, width: number, height: number) => {
-    const wall = this.add.rectangle(x, y, width, height, 0xffffff);
+    const wall = this.add.rectangle(x, y, width, height, 0xffffff, 0);
     this.physics.add.existing(wall, true);
     Object.values(this.playerEntities).forEach(player => {
       this.physics.add.collider(player, wall, this.handleCollision);
