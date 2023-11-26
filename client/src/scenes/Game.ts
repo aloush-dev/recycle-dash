@@ -5,6 +5,8 @@ type Player = {
   x: number;
   y: number;
   animation: string | null;
+  holding: boolean;
+  holdingType: string;
   inputQueue: any;
   onChange: any; //MUST fix this cannot put an any type in front of Johnny and Haz
 };
@@ -19,7 +21,7 @@ type Trash = {
   x: number;
   y: number;
   imgUrl: string;
-  type: string;
+  trashType: string;
   points: number;
   pickedUp: boolean;
   name: string;
@@ -213,9 +215,11 @@ export default class Game extends Phaser.Scene {
     if (spaceJustPressed && this.activeTrash) {
       this.activeTrash.pickedUp = true;
       this.currentPlayer.holding = true;
+      console.log(this.activeTrash.trashType);
       console.log(this.activeTrash.pickedUp);
       console.log("x pos : ", this.activeTrash.x);
       console.log("y pos : ", this.activeTrash.y);
+      this.activeTrash.setScale(0.5);
       this.activeTrash.x = this.currentPlayer.x;
       this.activeTrash.y = this.currentPlayer.y;
       console.log("gotcha");
@@ -301,18 +305,39 @@ export default class Game extends Phaser.Scene {
   private handleTrashCollision(player, trash) {
     // in here will need to set something on trash to be true to complete a check in the update controllers to allow user to grab that item
 
-    console.log("collide");
     if (this.activeTrash) {
       return;
     }
     this.activeTrash = trash;
+    player.holdingType = trash.texture.key;
     // console.log(trash);
   }
 
   private handleTrashCanCollision(player, trashCan) {
     console.log("found a bin");
+    const correctBin = {
+      "beer-bottle": "glass",
+      "cardboard-box": "paper",
+      "ceramic-mug": "non-recyclable",
+      "detergent-bottle": "plastic",
+      "glass-bottle": "glass",
+      "glass-jar": "glass",
+      "milk-bottle": "plastic",
+      newspaper: "paper",
+      "paper-bag": "paper",
+      "polystyrene-cup": "non-recyclable",
+      "spray-paint": "non-recyclable",
+      "water-bottle": "plastic",
+    };
     if (this.currentPlayer.holding) {
-      console.log(this.activeTrash);
+      const bin = trashCan.texture.key;
+
+      const holding = player.holdingType;
+      if (correctBin[holding] === bin) {
+        console.log("Yay! Correct bin!!");
+      } else {
+        console.log(`Oh No! You put ${holding} in a ${bin} bin!`);
+      }
       this.activeTrash.destroy();
       this.activeTrash = null;
       this.currentPlayer.holding = false;
