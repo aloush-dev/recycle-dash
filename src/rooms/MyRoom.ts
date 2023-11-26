@@ -64,6 +64,9 @@ export class MyRoom extends Room<MyRoomState> {
         player.y += velocity;
       }
     });
+    this.onMessage("updateTrash", (client, input) => {
+      console.log(input.trashItem);
+    });
     this.onMessage("setDifficulty", (client, difficulty) => {
       if (this.gameState !== "LOBBY") return;
       this.gameState = difficulty as GameState;

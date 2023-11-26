@@ -27,6 +27,14 @@ type Trash = {
   name: string;
 };
 
+type TrashInputPayLoadType = {
+  left: boolean;
+  right: boolean;
+  up: boolean;
+  down: boolean;
+  trashItem: Trash | null;
+};
+
 type InputPayloadType = {
   left: boolean;
   right: boolean;
@@ -57,7 +65,13 @@ export default class Game extends Phaser.Scene {
     down: false,
     animation: "down-idle-0",
   };
-
+  trashPayLoad: TrashInputPayLoadType = {
+    left: false,
+    right: false,
+    up: false,
+    down: false,
+    trashItem: null,
+  };
   cursorKeys!: Phaser.Types.Input.Keyboard.CursorKeys;
 
   countdown: any;
@@ -169,10 +183,17 @@ export default class Game extends Phaser.Scene {
 
     const velocity = 2;
 
+    this.trashPayLoad.left = this.cursorKeys.left.isDown;
+    this.trashPayLoad.right = this.cursorKeys.right.isDown;
+    this.trashPayLoad.up = this.cursorKeys.up.isDown;
+    this.trashPayLoad.down = this.cursorKeys.down.isDown;
+    this.trashPayLoad.trashItem = this.activeTrash;
+
     this.inputPayload.left = this.cursorKeys.left.isDown;
     this.inputPayload.right = this.cursorKeys.right.isDown;
     this.inputPayload.up = this.cursorKeys.up.isDown;
     this.inputPayload.down = this.cursorKeys.down.isDown;
+
     this.inputPayload.animation =
       this.currentPlayer.anims.currentAnim?.key || null;
 
@@ -220,11 +241,13 @@ export default class Game extends Phaser.Scene {
       console.log("x pos : ", this.activeTrash.x);
       console.log("y pos : ", this.activeTrash.y);
       this.activeTrash.setScale(0.5);
+
       this.activeTrash.x = this.currentPlayer.x;
       this.activeTrash.y = this.currentPlayer.y;
       console.log("gotcha");
     }
     this.room.send("updatePlayer", this.inputPayload);
+    this.room.send("updateTrash", this.trashPayLoad);
 
     for (let sessionId in this.playerEntities) {
       if (sessionId === this.room.sessionId) {
@@ -339,6 +362,7 @@ export default class Game extends Phaser.Scene {
         console.log(`Oh No! You put ${holding} in a ${bin} bin!`);
       }
       this.activeTrash.destroy();
+
       this.activeTrash = null;
       this.currentPlayer.holding = false;
     }
