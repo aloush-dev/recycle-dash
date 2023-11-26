@@ -35,10 +35,13 @@ type InputPayloadType = {
 type PlayerWithPhysics = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & {
   playerNumber?: number;
 };
+type Difficulty = "EASY" | "MEDIUM" | "HARD" | null;
 export default class Game extends Phaser.Scene {
   state: any;
+  difficulty: Difficulty;
   constructor() {
     super("game");
+    this.difficulty = null;
   }
 
   currentPlayer!: PlayerWithPhysics;
@@ -63,8 +66,11 @@ export default class Game extends Phaser.Scene {
     );
   }
 
-  init() {
+  init({ difficulty }: { difficulty: Difficulty }) {
     this.cursorKeys = this.input.keyboard!.createCursorKeys();
+    if (difficulty) {
+      this.difficulty = difficulty;
+    }
   }
   client = new Client("ws://localhost:2567");
 
@@ -77,13 +83,13 @@ export default class Game extends Phaser.Scene {
   }
 
   room!: Room;
-  async create(data) {
+  async create(data: { difficulty: string }) {
     console.log(data);
     const bg = this.add.sprite(0, 0, "gameBackground");
     bg.setOrigin(0, 0);
-
     try {
       this.room = await this.client.joinOrCreate("my_room");
+      this.room.send("setDifficulty", this.difficulty);
       this.room.onMessage("clock", this.handleClock);
       this.room.state.trashCans.onAdd((trashCan: TrashCan, key: string) => {
         this.createCan(trashCan, key);

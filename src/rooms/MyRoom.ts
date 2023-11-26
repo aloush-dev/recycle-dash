@@ -5,15 +5,8 @@ import {
   NonRecyclable,
   PaperCan,
   PlasticCan,
-  TrashCan,
 } from "../Trash/TrashCans";
-import {
-  HEIGHT,
-  INITIAL_TRASH,
-  TRASH_FOR_DIFFICULTY,
-  TRASH_LOADING_WIDTH,
-  WIDTH,
-} from "../globalConstants";
+import { HEIGHT, TRASH_FOR_DIFFICULTY, WIDTH } from "../globalConstants";
 import TrashGenerator from "../Trash/TrashGenorator";
 
 const LETTERS = "ABCDEFGHIJKLLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -26,7 +19,7 @@ export class MyRoom extends Room<MyRoomState> {
     this.state.gameInProgress = gameInProgress;
   }
   get gameState() {
-    return this.state.gameInProgress;
+    return this.state.gameInProgress as GameState;
   }
   generateRoomIdSingle(): string {
     let result = "";
@@ -71,6 +64,13 @@ export class MyRoom extends Room<MyRoomState> {
         player.y += velocity;
       }
     });
+    this.onMessage("setDifficulty", (client, difficulty) => {
+      if (this.gameState !== "LOBBY") return;
+      this.gameState = difficulty as GameState;
+      this.setUpTrash();
+      console.log(this.state.trash.length);
+    });
+    1;
   }
   onJoin(client: Client, options: any) {
     console.log(client.sessionId, "joined!");
@@ -114,6 +114,7 @@ export class MyRoom extends Room<MyRoomState> {
   private setUpTrash() {
     const difficulties = ["EASY", "MEDIUM", "HARD"];
     if (!difficulties.includes(this.gameState)) return;
+    this.state.trash.clear();
     const key = this.gameState as keyof typeof TRASH_FOR_DIFFICULTY;
     const numberOfTrashToSpawn = TRASH_FOR_DIFFICULTY[key];
     for (let i = 0; i < numberOfTrashToSpawn; i++) {
