@@ -57,7 +57,10 @@ export default class Game extends Phaser.Scene {
   countdown: any;
 
   preload() {
-    this.load.image("gameBackground", "https://i.ibb.co/khH5sZ0/map.png");
+    this.load.image(
+      "gameBackground",
+      "https://i.ibb.co/5xHfZX3/recyleroom.png"
+    );
   }
 
   init() {

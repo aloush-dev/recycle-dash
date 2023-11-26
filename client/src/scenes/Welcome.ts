@@ -31,39 +31,37 @@ export default class Welcome extends Phaser.Scene {
     const bg = this.add.sprite(0, 0, "welcomeBackground");
     bg.setOrigin(0, 0);
 
-    const welcomeText = this.add.text(200, 50, "Recycle Dash", {
-      fontFamily: "MarioKart",
-      fontSize: "90px",
-      color: "#91c7b1",
-      stroke: "#b33951",
-      strokeThickness: 8,
-      align: "center",
-    });
-    const HostGameButton = this.add.text(415, 300, "Host Game", {
-      fontFamily: "MarioKart",
-      backgroundColor: "#e3d081",
-      color: "#b33951",
-      fontSize: "30px",
-      padding: { x: 12, y: 12 },
-      align: "center",
-    });
-    const JoinGameButton = this.add.text(415, 400, "Join Game", {
-      fontFamily: "MarioKart",
-      backgroundColor: "#e3d081",
-      color: "#b33951",
-      fontSize: "30px",
-      padding: { x: 12, y: 12 },
-      align: "center",
+    const welcomeText = this.add
+      .text(1000 * 0.5, 100, "Recycle Dash", {
+        fontFamily: "MarioKart",
+        fontSize: "90px",
+        color: "#91c7b1",
+        stroke: "#b33951",
+        strokeThickness: 8,
+        align: "center",
+      })
+      .setOrigin(0.5);
+    const PlayButton = this.add
+      .text(1000 * 0.5, 400, "Play Game", {
+        fontFamily: "MarioKart",
+        backgroundColor: "#e3d081",
+        color: "#b33951",
+        fontSize: "30px",
+        padding: { x: 20, y: 20 },
+      })
+      .setOrigin(0.5);
+
+    this.tweens.add({
+      targets: welcomeText,
+      x: welcomeText.x - 10,
+      y: welcomeText.y - 10,
+      duration: 400,
+      yoyo: true,
+      repeat: -1,
     });
 
-    // const inputBox = document.getElementById("inputBox");
-    // inputBox?.addEventListener("change", event => {
-    //   const gameCode = event.target?.value;
-    // });
-    HostGameButton.setInteractive({ useHandCursor: true });
-    HostGameButton.on("pointerdown", () => this.hostGameButton());
-    JoinGameButton.setInteractive({ useHandCursor: true });
-    JoinGameButton.on("pointerdown", () => this.joinGameButton());
+    PlayButton.setInteractive({ useHandCursor: true });
+    PlayButton.on("pointerdown", () => this.hostGameButton());
 
     // const backgroundMuisc = this.sound.add("backgroundMusic", { loop: true });
     // backgroundMuisc.play();

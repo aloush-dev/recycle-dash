@@ -18,7 +18,7 @@ const config = {
       gravity: { y: 0 },
     },
   },
-  scene: [PreLoader, Welcome, Lobby, Game, EndGame],
+  scene: [PreLoader, Welcome, Game, EndGame],
 };
 
 export default new Phaser.Game(config);
