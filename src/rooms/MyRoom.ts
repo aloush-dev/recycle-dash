@@ -66,25 +66,17 @@ export class MyRoom extends Room<MyRoomState> {
     });
 
     this.onMessage("updateTrash", (client, input) => {
-      const { left, right, up, down, trashItem } = input;
+      const { trashId, trashX, trashY } = input;
       const item = this.state.trash.filter(trash => {
-        return trash.uniqueId === trashItem;
+        return trash.uniqueId === trashId;
       })[0];
 
-      const velocity = 2;
-      if (item && left) {
-        item.x -= velocity;
-      }
-      if (item && right) {
-        item.x += velocity;
-      }
-      if (item && up) {
-        item.y -= velocity;
-      }
-      if (item && down) {
-        item.y += velocity;
+      if (item) {
+        item.x = trashX;
+        item.y = trashY;
       }
     });
+
     this.onMessage("deleteTrash", (client, input) => {
       console.log(input, "delete me");
       // const indexToRemove = this.state.trash.findIndex(item => {

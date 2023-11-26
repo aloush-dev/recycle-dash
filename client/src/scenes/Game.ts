@@ -183,11 +183,11 @@ export default class Game extends Phaser.Scene {
 
     const velocity = 2;
 
-    this.trashPayLoad.left = this.cursorKeys.left.isDown;
-    this.trashPayLoad.right = this.cursorKeys.right.isDown;
-    this.trashPayLoad.up = this.cursorKeys.up.isDown;
-    this.trashPayLoad.down = this.cursorKeys.down.isDown;
-    this.trashPayLoad.trashItem = this.activeTrash?.data?.list.id;
+    // this.trashPayLoad.left = this.cursorKeys.left.isDown;
+    // this.trashPayLoad.right = this.cursorKeys.right.isDown;
+    // this.trashPayLoad.up = this.cursorKeys.up.isDown;
+    // this.trashPayLoad.down = this.cursorKeys.down.isDown;
+    // this.trashPayLoad.trashItem = this.activeTrash?.data?.list.id;
 
     this.inputPayload.left = this.cursorKeys.left.isDown;
     this.inputPayload.right = this.cursorKeys.right.isDown;
@@ -200,21 +200,21 @@ export default class Game extends Phaser.Scene {
     if (this.inputPayload.left) {
       this.currentPlayer.play(`left-walk-${animNum}`, true);
       this.currentPlayer.x -= velocity;
-      this.activeTrash?.pickedUp ? (this.activeTrash.x -= velocity) : null;
+      // this.activeTrash?.pickedUp ? (this.activeTrash.x -= velocity) : null;
     } else if (this.inputPayload.right) {
       this.currentPlayer.play(`right-walk-${animNum}`, true);
       this.currentPlayer.x += velocity;
-      this.activeTrash?.pickedUp ? (this.activeTrash.x += velocity) : null;
+      // this.activeTrash?.pickedUp ? (this.activeTrash.x += velocity) : null;
     }
 
     if (this.inputPayload.up) {
       this.currentPlayer.play(`up-walk-${animNum}`, true);
       this.currentPlayer.y -= velocity;
-      this.activeTrash?.pickedUp ? (this.activeTrash.y -= velocity) : null;
+      // this.activeTrash?.pickedUp ? (this.activeTrash.y -= velocity) : null;
     } else if (this.inputPayload.down) {
       this.currentPlayer.play(`down-walk-${animNum}`, true);
       this.currentPlayer.y += velocity;
-      this.activeTrash?.pickedUp ? (this.activeTrash.y += velocity) : null;
+      // this.activeTrash?.pickedUp ? (this.activeTrash.y += velocity) : null;
     } else {
       this.currentPlayer.setVelocity(0, 0);
 
@@ -234,16 +234,22 @@ export default class Game extends Phaser.Scene {
     );
 
     if (spaceJustPressed && this.activeTrash) {
+      this.activeTrash.setScale(0.5);
       this.activeTrash.pickedUp = true;
       this.currentPlayer.holding = true;
+    }
 
-      this.activeTrash.setScale(0.5);
-
+    if (this.activeTrash?.pickedUp) {
       this.activeTrash.x = this.currentPlayer.x;
       this.activeTrash.y = this.currentPlayer.y;
     }
+
     this.room.send("updatePlayer", this.inputPayload);
-    this.room.send("updateTrash", this.trashPayLoad);
+    this.room.send("updateTrash", {
+      trashId: this.activeTrash?.data.id,
+      trashX: this.activeTrash?.x,
+      trashY: this.activeTrash?.y,
+    });
 
     for (let sessionId in this.playerEntities) {
       if (sessionId === this.room.sessionId) {
@@ -261,12 +267,14 @@ export default class Game extends Phaser.Scene {
         }
       }
 
-      for (const trash in this.trashEntities) {
-        const trashEntity = this.trashEntities[trash];
-        const { serverX, serverY } = trashEntity.data.values;
-        trashEntity.x = Phaser.Math.Linear(trashEntity.x, serverX, 0.4);
-        trashEntity.y = Phaser.Math.Linear(trashEntity.y, serverY, 0.4);
-      }
+      // for (const trash in this.trashEntities) {
+      //   const trashEntity = this.trashEntities[trash];
+      //   if (trashEntity && trashEntity.data) {
+      //     const { serverX, serverY } = trashEntity.data.values;
+      //     trashEntity.x = Phaser.Math.Linear(trashEntity.x, serverX, 0.4);
+      //     trashEntity.y = Phaser.Math.Linear(trashEntity.y, serverY, 0.4);
+      //   }
+      // }
     }
   }
 
@@ -328,8 +336,11 @@ export default class Game extends Phaser.Scene {
     });
     image.setData("id", trashItem.uniqueId);
     trashItem.onChange(() => {
-      image.setData("serverX", trashItem.x);
-      image.setData("serverY", trashItem.y);
+      console.log(trashItem.x, trashItem.y);
+      image.x = trashItem.x;
+      image.y = trashItem.y;
+      // image.setData("serverX", trashItem.x);
+      // image.setData("serverY", trashItem.y);
     });
     this.trashEntities[trashItem.name] = image;
   }
