@@ -74,7 +74,6 @@ export class MyRoom extends Room<MyRoomState> {
       if (this.gameState !== "LOBBY") return;
       this.gameState = difficulty as GameState;
       this.setUpTrash();
-      console.log(this.state.trash.length);
     });
     1;
   }
@@ -84,7 +83,6 @@ export class MyRoom extends Room<MyRoomState> {
     const mapWidth = WIDTH;
     const mapHeight = HEIGHT;
     const playerNumber = (this.state.players.size + 1) as PlayerIndex;
-    console.log(playerNumber);
     const spawn = PLAYER_SPAWN_LOCATIONS[playerNumber];
     const player = new Player();
     player.x = spawn.x;

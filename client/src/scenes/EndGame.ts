@@ -39,7 +39,6 @@ export default class EndGame extends Phaser.Scene {
 
   async create(data: { timer: string; numOfPlayers: number }) {
     const { timer, numOfPlayers } = data;
-    console.log(data);
     const bg = this.add.sprite(0, 0, "endgameBackground");
     bg.setOrigin(0, 0);
     bg.setScale(1000 / 2034, 800 / 1792);

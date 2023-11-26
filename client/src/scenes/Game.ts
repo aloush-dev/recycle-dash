@@ -102,7 +102,6 @@ export default class Game extends Phaser.Scene {
 
   room!: Room;
   async create(data: { difficulty: string }) {
-    console.log(data);
     const bg = this.add.sprite(0, 0, "gameBackground");
     bg.setOrigin(0, 0);
     try {
@@ -139,9 +138,7 @@ export default class Game extends Phaser.Scene {
 
           entity.setScale(0.55);
           this.wallEntities.forEach(wall => {
-            this.physics.add.collider(entity, wall, (player, wall) => {
-              console.log(player, wall);
-            });
+            this.physics.add.collider(entity, wall, (player, wall) => {});
           });
           this.playerEntities[sessionId] = entity;
           this.playerEntities[sessionId].playerNumber = playerNum;
