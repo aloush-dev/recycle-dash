@@ -32,15 +32,16 @@ type InputPayloadType = {
   down: boolean;
   animation: string | null;
 };
+type PlayerWithPhysics = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & {
+  playerNumber?: number;
+};
 export default class Game extends Phaser.Scene {
   state: any;
   constructor() {
     super("game");
   }
 
-  currentPlayer!: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & {
-    playerNumber?: number;
-  };
+  currentPlayer!: PlayerWithPhysics;
   remoteRef!: Phaser.GameObjects.Rectangle;
 
   inputPayload: InputPayloadType = {
@@ -63,7 +64,6 @@ export default class Game extends Phaser.Scene {
     this.cursorKeys = this.input.keyboard!.createCursorKeys();
   }
   client = new Client("ws://localhost:2567");
-  room!: Room;
 
   playerEntities: { [sessionId: string]: any } = {};
   trashCanEntities: { [key: string]: any } = {};
@@ -104,15 +104,16 @@ export default class Game extends Phaser.Scene {
     const imageX = trashItem.x + rectWidth / 2;
     const imageY = trashItem.y + rectHeight / 2;
 
-    const image = this.add.image(imageX, imageY, trashItem.name);
-
-    this.trashEntities[trashItem.name] = graphics;
+    const image = this.physics.add.image(imageX, imageY, trashItem.name);
+    image.setInteractive(); // if needed
+    Object.values(this.playerEntities).forEach((player: PlayerWithPhysics) => {
+      this.physics.add.collider(player, image, this.handleTrashCollision);
+    });
+    this.trashEntities[trashItem.name] = image;
   }
-
-  endGameStats = {
-    players: this.playerEntities,
-  };
-
+  private handleTrashCollision() {
+    console.log("trash collision");
+  }
   async create() {
     const bg = this.add.sprite(0, 0, "gameBackground");
     bg.setOrigin(0, 0);
@@ -259,5 +260,8 @@ export default class Game extends Phaser.Scene {
         }
       }
     }
+  }
+  private setupCollision(object1: any, object2: any, callback: any) {
+    this.physics.add.collider(object1, object2, callback);
   }
 }
