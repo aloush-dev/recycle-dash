@@ -50,9 +50,12 @@ type Difficulty = "EASY" | "MEDIUM" | "HARD" | null;
 export default class Game extends Phaser.Scene {
   state: any;
   difficulty: Difficulty;
+  timer!: Phaser.GameObjects.Text | null;
+  timerValue: string;
   constructor() {
     super("game");
     this.difficulty = null;
+    this.timerValue = "0";
   }
 
   currentPlayer!: PlayerWithPhysics;
@@ -96,8 +99,22 @@ export default class Game extends Phaser.Scene {
   trashCanEntities: { [key: string]: any } = {};
   trashEntities: { [key: string]: any } = {};
 
-  private handleClock(value: number) {
-    console.log(value);
+  private handleClock = (value: number) => {
+    this.timerValue = value.toString();
+    if (this.timer) {
+      this.timer.setText(value.toString());
+    }
+  };
+
+  endTheGame(numOfPlayers: number) {
+    let currentTimerValue = [];
+    currentTimerValue.push(this.timerValue);
+
+    let dataToPass = {
+      timer: currentTimerValue[0],
+      numOfPlayers: numOfPlayers,
+    };
+    this.game.scene.start("endgame", dataToPass);
   }
 
   room!: Room;
@@ -169,6 +186,29 @@ export default class Game extends Phaser.Scene {
         }
       );
 
+      this.timer = this.add
+        .text(900, 760, this.timerValue, {
+          fontFamily: "MarioKart",
+          backgroundColor: "#e3d081",
+          color: "#b33951",
+          fontSize: "30px",
+          fixedWidth: 150,
+          padding: { x: 20, y: 10 },
+          align: "center",
+        })
+        .setOrigin(0.5);
+
+      this.add
+        .text(900, 730, "Time Taken", {
+          fontFamily: "MarioKart",
+          backgroundColor: "#e3d081",
+          color: "#b33951",
+          fontSize: "15px",
+          padding: { x: 20, y: 5 },
+          align: "center",
+        })
+        .setOrigin(0.5);
+
       this.room.state.players.onRemove((sessionId: string | number) => {
         const entity = this.playerEntities[sessionId];
         if (entity) {
@@ -188,6 +228,11 @@ export default class Game extends Phaser.Scene {
     if (!this.room) {
       return;
     }
+
+    if (this.room.state.trash.length === 1) {
+      this.endTheGame(Object.keys(this.playerEntities).length);
+    }
+
     this.updateActiveTrash();
     const animNum: number = this.currentPlayer.playerNumber || 0;
 

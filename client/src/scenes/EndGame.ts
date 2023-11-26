@@ -78,15 +78,15 @@ export default class EndGame extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    const finishingTime = this.add
-      .text(1000 * 0.5, 390, this.formatTime(+timer), {
-        fontFamily: "MarioKart",
-        backgroundColor: "#e3d081",
-        color: "#b33951",
-        fontSize: "30px",
-        padding: { x: 20 },
-      })
-      .setOrigin(0.5);
+    // const finishingTime = this.add
+    //   .text(1000 * 0.5, 390, this.formatTime(+timer), {
+    //     fontFamily: "MarioKart",
+    //     backgroundColor: "#e3d081",
+    //     color: "#b33951",
+    //     fontSize: "30px",
+    //     padding: { x: 20 },
+    //   })
+    //   .setOrigin(0.5);
 
     // const playAgain = this.add
     //   .text(1000 * 0.5, 500, "Play Again", {
