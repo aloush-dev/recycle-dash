@@ -5,6 +5,7 @@ import {
   PAPER_IMG_URL,
   PLASTIC_IMG_URL,
 } from "../globalConstants";
+import { Trash } from "./Trash";
 
 export abstract class TrashCan extends Schema {
   @type("number") x: number;
@@ -15,6 +16,9 @@ export abstract class TrashCan extends Schema {
     super();
     this.x = x;
     this.y = y;
+  }
+  public validate(trash: Trash) {
+    return trash.type === this.type;
   }
 }
 
