@@ -9,3 +9,9 @@ export const NON_RECYCLABLE_IMG_URL =
   "https://i.ibb.co/T1YskkW/brown-trash-can.png";
 
 export const INITIAL_TRASH = 10;
+
+export const TRASH_FOR_DIFFICULTY = {
+  EASY: 20,
+  MEDIUM: 40,
+  HARD: 60,
+};

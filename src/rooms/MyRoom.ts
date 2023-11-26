@@ -10,18 +10,24 @@ import {
 import {
   HEIGHT,
   INITIAL_TRASH,
+  TRASH_FOR_DIFFICULTY,
   TRASH_LOADING_WIDTH,
   WIDTH,
 } from "../globalConstants";
 import TrashGenerator from "../Trash/TrashGenorator";
 
 const LETTERS = "ABCDEFGHIJKLLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-
+type GameState = "LOBBY" | "EASY" | "MEDIUM" | "HARD" | "COMPLETE";
 export class MyRoom extends Room<MyRoomState> {
   maxClients = 4;
   update: any; // NOT GOOD PLS FIX
   LOBBY_CHANNEL = "$mylobby";
-
+  set gameState(gameInProgress: GameState) {
+    this.state.gameInProgress = gameInProgress;
+  }
+  get gameState() {
+    return this.state.gameInProgress;
+  }
   generateRoomIdSingle(): string {
     let result = "";
     for (let i = 0; i < 4; i++) {
@@ -40,13 +46,15 @@ export class MyRoom extends Room<MyRoomState> {
     await this.presence.sadd(this.LOBBY_CHANNEL, id);
     return id;
   }
-
+  private clockInterval: any;
   async onCreate(options: any) {
     this.roomId = await this.generateRoomId();
     this.setState(new MyRoomState());
     this.setUpCans();
     this.setUpTrash();
-
+    this.clockInterval = setInterval(() => {
+      this.incrementClock();
+    }, 1000);
     this.onMessage("updatePlayer", (client, input) => {
       const player = this.state.players.get(client.sessionId);
       const velocity = 2;
@@ -81,6 +89,7 @@ export class MyRoom extends Room<MyRoomState> {
   }
 
   onDispose() {
+    clearInterval(this.clockInterval);
     console.log("room", this.roomId, "disposing...");
   }
   private setUpCans() {
@@ -103,9 +112,18 @@ export class MyRoom extends Room<MyRoomState> {
     );
   }
   private setUpTrash() {
-    for (let i = 0; i < INITIAL_TRASH; i++) {
+    const difficulties = ["EASY", "MEDIUM", "HARD"];
+    if (!difficulties.includes(this.gameState)) return;
+    const key = this.gameState as keyof typeof TRASH_FOR_DIFFICULTY;
+    const numberOfTrashToSpawn = TRASH_FOR_DIFFICULTY[key];
+    for (let i = 0; i < numberOfTrashToSpawn; i++) {
       const trash = TrashGenerator.random();
       this.state.trash.push(trash);
     }
+  }
+  private incrementClock() {
+    if (this.gameState === "LOBBY" || this.gameState === "COMPLETE") return;
+    ++this.state.clock;
+    this.broadcast("clock", this.state.clock);
   }
 }
