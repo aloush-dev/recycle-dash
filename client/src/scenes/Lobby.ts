@@ -44,7 +44,7 @@ export default class Lobby extends Phaser.Scene {
     x: 200,
     y: 700,
   };
-
+  room!: Room;
   async create() {
     const bg = this.add.sprite(0, 0, "lobbyBackground");
     bg.setOrigin(0, 0);

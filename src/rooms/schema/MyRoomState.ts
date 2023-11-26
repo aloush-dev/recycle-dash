@@ -14,5 +14,5 @@ export class MyRoomState extends Schema {
   @type([Trash]) trash = new ArraySchema<Trash>();
   @type({ map: TrashCan }) trashCans = new MapSchema<TrashCan>();
   @type("number") clock = 0;
-  @type("string") gameInProgress = "EASY";
+  @type("string") gameInProgress = "LOBBY";
 }
