@@ -80,6 +80,7 @@ export default class Game extends Phaser.Scene {
   playerEntities: { [sessionId: string]: any } = {};
   trashCanEntities: { [key: string]: any } = {};
   trashEntities: { [key: string]: any } = {};
+  wallEntities: any[] = [];
 
   private handleClock = (value: number) => {
     this.timerValue = value.toString();
@@ -127,7 +128,7 @@ export default class Game extends Phaser.Scene {
           );
 
           const playerNum = Object.keys(this.playerEntities).length;
-          const sprites = [24, 36, 48, 60];
+          const sprites = [25, 37, 49, 61];
 
           const entity = this.physics.add.sprite(
             player.x,
@@ -137,6 +138,11 @@ export default class Game extends Phaser.Scene {
           );
 
           entity.setScale(0.55);
+          this.wallEntities.forEach(wall => {
+            this.physics.add.collider(entity, wall, (player, wall) => {
+              console.log(player, wall);
+            });
+          });
           this.playerEntities[sessionId] = entity;
           this.playerEntities[sessionId].playerNumber = playerNum;
           if (sessionId === this.room.sessionId) {
@@ -157,6 +163,88 @@ export default class Game extends Phaser.Scene {
           });
         }
       );
+
+      // PADDOCKS
+      this.makeWall(90, 750, 25, 100);
+      this.makeWall(200, 750, 25, 100);
+      this.makeWall(280, 750, 25, 100);
+      this.makeWall(390, 750, 25, 100);
+      this.makeWall(470, 750, 25, 100);
+      this.makeWall(590, 750, 25, 100);
+      this.makeWall(660, 750, 25, 100);
+      this.makeWall(780, 750, 25, 100);
+
+      //MIDDLE BIT
+      this.makeWall(155, 425, 8, 70);
+      this.makeWall(155, 280, 8, 70);
+      this.makeWall(705, 425, 8, 70);
+      this.makeWall(705, 280, 8, 70);
+
+      this.makeWall(190, 455, 75, 8);
+      this.makeWall(335, 455, 90, 8);
+      this.makeWall(530, 455, 90, 8);
+      this.makeWall(675, 455, 70, 8);
+
+      this.makeWall(190, 250, 75, 8);
+      this.makeWall(335, 250, 90, 8);
+      this.makeWall(530, 250, 90, 8);
+      this.makeWall(675, 250, 70, 8);
+
+      //box room
+      this.makeWall(835, 405, 8, 60);
+      this.makeWall(835, 290, 8, 60);
+      this.makeWall(930, 260, 170, 8);
+      this.makeWall(920, 465, 170, 50);
+
+      //clock
+      this.makeWall(920, 750, 170, 100);
+
+      //converyor belts
+      this.makeWall(910, 20, 90, 80);
+      this.makeWall(620, 20, 90, 80);
+      this.makeWall(390, 20, 90, 80);
+      this.makeWall(110, 20, 90, 80);
+
+      // PADDOCKS
+      this.makeWall(90, 750, 25, 100);
+      this.makeWall(200, 750, 25, 100);
+      this.makeWall(280, 750, 25, 100);
+      this.makeWall(390, 750, 25, 100);
+      this.makeWall(470, 750, 25, 100);
+      this.makeWall(590, 750, 25, 100);
+      this.makeWall(660, 750, 25, 100);
+      this.makeWall(780, 750, 25, 100);
+
+      //MIDDLE BIT
+      this.makeWall(155, 425, 8, 70);
+      this.makeWall(155, 280, 8, 70);
+      this.makeWall(705, 425, 8, 70);
+      this.makeWall(705, 280, 8, 70);
+
+      this.makeWall(190, 455, 75, 8);
+      this.makeWall(335, 455, 90, 8);
+      this.makeWall(530, 455, 90, 8);
+      this.makeWall(675, 455, 70, 8);
+
+      this.makeWall(190, 250, 75, 8);
+      this.makeWall(335, 250, 90, 8);
+      this.makeWall(530, 250, 90, 8);
+      this.makeWall(675, 250, 70, 8);
+
+      //box room
+      this.makeWall(835, 405, 8, 60);
+      this.makeWall(835, 290, 8, 60);
+      this.makeWall(930, 260, 170, 8);
+      this.makeWall(920, 465, 170, 50);
+
+      //clock
+      this.makeWall(920, 750, 170, 100);
+
+      //converyor belts
+      this.makeWall(910, 20, 90, 80);
+      this.makeWall(620, 20, 90, 80);
+      this.makeWall(390, 20, 90, 80);
+      this.makeWall(110, 20, 90, 80);
 
       this.timer = this.add
         .text(900, 760, this.timerValue, {
@@ -206,53 +294,57 @@ export default class Game extends Phaser.Scene {
     }
 
     const animNum: number = this.currentPlayer.playerNumber || 0;
+    const velocity = 160; // Adjust this value based on desired speed
 
-    const velocity = 2;
+    // Reset velocities to 0 initially
+    this.currentPlayer.setVelocity(0);
 
-    this.inputPayload.left = this.cursorKeys.left.isDown;
-    this.inputPayload.right = this.cursorKeys.right.isDown;
-    this.inputPayload.up = this.cursorKeys.up.isDown;
-    this.inputPayload.down = this.cursorKeys.down.isDown;
-    this.inputPayload.animation =
-      this.currentPlayer.anims.currentAnim?.key || null;
-
-    if (this.inputPayload.left) {
+    // Determine animation and movement direction
+    if (this.cursorKeys.left.isDown) {
+      this.currentPlayer.setVelocityX(-velocity);
       this.currentPlayer.play(`left-walk-${animNum}`, true);
-      this.currentPlayer.x -= velocity;
-    } else if (this.inputPayload.right) {
+    } else if (this.cursorKeys.right.isDown) {
+      this.currentPlayer.setVelocityX(velocity);
       this.currentPlayer.play(`right-walk-${animNum}`, true);
-      this.currentPlayer.x += velocity;
     }
 
-    if (this.inputPayload.up) {
+    if (this.cursorKeys.up.isDown) {
+      this.currentPlayer.setVelocityY(-velocity);
       this.currentPlayer.play(`up-walk-${animNum}`, true);
-      this.currentPlayer.y -= velocity;
-    } else if (this.inputPayload.down) {
+    } else if (this.cursorKeys.down.isDown) {
+      this.currentPlayer.setVelocityY(velocity);
       this.currentPlayer.play(`down-walk-${animNum}`, true);
-      this.currentPlayer.y += velocity;
-    } else {
-      this.currentPlayer.setVelocity(0, 0);
+    }
 
-      if (!this.inputPayload.left && !this.inputPayload.right) {
-        const currentAnimKey = this.currentPlayer.anims.currentAnim?.key;
-
-        // Check if the player is not already playing an idle animation
-        if (currentAnimKey && !currentAnimKey.includes("idle")) {
-          const parts = currentAnimKey.split("-");
-          const direction = parts[0];
-          this.currentPlayer.play(`${direction}-idle-${animNum}`);
-        }
+    // If the player is not moving, play idle animation
+    if (
+      !this.cursorKeys.left.isDown &&
+      !this.cursorKeys.right.isDown &&
+      !this.cursorKeys.up.isDown &&
+      !this.cursorKeys.down.isDown
+    ) {
+      const currentAnimKey = this.currentPlayer.anims.currentAnim?.key;
+      if (currentAnimKey && !currentAnimKey.includes("idle")) {
+        const parts = currentAnimKey.split("-");
+        const direction = parts[0];
+        this.currentPlayer.play(`${direction}-idle-${animNum}`);
       }
     }
-    this.room.send("updatePlayer", this.inputPayload);
 
+    // Send updated player state to the server
+    this.room.send("updatePlayer", {
+      x: this.currentPlayer.x,
+      y: this.currentPlayer.y,
+      animation: this.currentPlayer.anims.currentAnim?.key,
+    });
+
+    // Update other players based on server data
     for (let sessionId in this.playerEntities) {
       if (sessionId === this.room.sessionId) {
         continue;
       }
 
       const entity = this.playerEntities[sessionId];
-
       if (entity) {
         const { serverX, serverY, animation } = entity.data.values;
         entity.x = Phaser.Math.Linear(entity.x, serverX, 0.4);
@@ -303,16 +395,38 @@ export default class Game extends Phaser.Scene {
 
     const image = this.physics.add.image(imageX, imageY, trashItem.name);
     image.setInteractive(); // if needed
+    image.setBounce(0, 0);
     Object.values(this.playerEntities).forEach((player: PlayerWithPhysics) => {
-      this.physics.add.collider(player, image, this.handleTrashCollision);
+      this.physics.add.overlap(player, image, this.handleTrashCollision);
     });
     this.trashEntities[trashItem.name] = image;
   }
   private handleTrashCollision() {
     console.log("trash collision");
   }
+  private makeWall = (x: number, y: number, width: number, height: number) => {
+    const wall = this.add.rectangle(x, y, width, height, 0xffffff);
+    this.physics.add.existing(wall, true);
+    Object.values(this.playerEntities).forEach(player => {
+      this.physics.add.collider(player, wall, this.handleCollision);
+    });
+    this.wallEntities.push(wall);
+  };
 
   private setupCollision(object1: any, object2: any, callback: any) {
     this.physics.add.collider(object1, object2, callback);
+  }
+  private handleCollision(player: any, wall: any) {
+    if (player.body.touching.up) {
+      console.log("Collided on the top side of the player");
+    } else if (player.body.touching.down) {
+      console.log("Collided on the bottom side of the player");
+    }
+
+    if (player.body.touching.left) {
+      console.log("Collided on the left side of the player");
+    } else if (player.body.touching.right) {
+      console.log("Collided on the right side of the player");
+    }
   }
 }
