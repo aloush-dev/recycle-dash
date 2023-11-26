@@ -19,7 +19,7 @@ type GameState = "LOBBY" | "EASY" | "MEDIUM" | "HARD" | "COMPLETE";
 type PlayerIndex = keyof typeof PLAYER_SPAWN_LOCATIONS;
 export class MyRoom extends Room<MyRoomState> {
   maxClients = 4;
-  update: any; // NOT GOOD PLS FIX
+  update: any;
   LOBBY_CHANNEL = "$mylobby";
   set gameState(gameInProgress: GameState) {
     this.state.gameInProgress = gameInProgress;
@@ -70,6 +70,33 @@ export class MyRoom extends Room<MyRoomState> {
         player.y += velocity;
       }
     });
+
+    this.onMessage("updateTrash", (client, input) => {
+      const { trashId, trashX, trashY } = input;
+
+      const item = this.state.trash.find(trash => {
+        return trash.uniqueId === trashId;
+      });
+
+      if (item) {
+        item.x = trashX;
+        item.y = trashY;
+      }
+      this.broadcast("updateTrashPosition", { trashId, trashX, trashY });
+    });
+
+    this.onMessage("deleteTrash", (client, input) => {
+      const indexToRemove = this.state.trash.findIndex((item: any) => {
+        return item.uniqueId === input;
+      });
+      console.log(input, indexToRemove);
+
+      if (indexToRemove !== -1) {
+        this.state.trash.splice(indexToRemove, 1);
+      }
+      this.broadcast("removeTrash", input);
+    });
+
     this.onMessage("setDifficulty", (client, difficulty) => {
       if (this.gameState !== "LOBBY") return;
       this.gameState = difficulty as GameState;
@@ -99,6 +126,7 @@ export class MyRoom extends Room<MyRoomState> {
     clearInterval(this.clockInterval);
     console.log("room", this.roomId, "disposing...");
   }
+
   private setUpCans() {
     const locations: { x: number; y: number }[] = [];
     for (let i = 4; i > 0; i--) {

@@ -5,6 +5,8 @@ type Player = {
   x: number;
   y: number;
   animation: string | null;
+  holding: boolean;
+  holdingType: string;
   inputQueue: any;
   onChange: any; //MUST fix this cannot put an any type in front of Johnny and Haz
 };
@@ -19,10 +21,18 @@ type Trash = {
   x: number;
   y: number;
   imgUrl: string;
-  type: string;
+  trashType: string;
   points: number;
   pickedUp: boolean;
   name: string;
+};
+
+type TrashInputPayLoadType = {
+  left: boolean;
+  right: boolean;
+  up: boolean;
+  down: boolean;
+  trashItem: Trash | null;
 };
 
 type InputPayloadType = {
@@ -34,7 +44,8 @@ type InputPayloadType = {
 };
 type PlayerWithPhysics = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & {
   playerNumber?: number;
-};
+} & { holding?: boolean };
+
 type Difficulty = "EASY" | "MEDIUM" | "HARD" | null;
 export default class Game extends Phaser.Scene {
   state: any;
@@ -57,11 +68,18 @@ export default class Game extends Phaser.Scene {
     down: false,
     animation: "down-idle-0",
   };
-
+  trashPayLoad: TrashInputPayLoadType = {
+    left: false,
+    right: false,
+    up: false,
+    down: false,
+    trashItem: null,
+  };
   cursorKeys!: Phaser.Types.Input.Keyboard.CursorKeys;
 
   countdown: any;
-
+  canBeCarried: boolean = false;
+  activeTrash!: Trash | null;
   preload() {
     this.load.image(
       "gameBackground",
@@ -135,7 +153,7 @@ export default class Game extends Phaser.Scene {
             "playerSheet",
             sprites[playerNum]
           );
-
+          entity.setCollideWorldBounds(true);
           entity.setScale(0.55);
           this.wallEntities.forEach(wall => {
             this.physics.add.collider(entity, wall, (player, wall) => {});
@@ -145,8 +163,6 @@ export default class Game extends Phaser.Scene {
           if (sessionId === this.room.sessionId) {
             this.currentPlayer = entity;
           } else {
-            // all remote players are here!
-
             player.onChange(() => {
               entity.setData("serverX", player.x);
               entity.setData("serverY", player.y);
@@ -160,7 +176,20 @@ export default class Game extends Phaser.Scene {
           });
         }
       );
-
+      this.room.onMessage(
+        "updateTrashPosition",
+        ({ trashId, trashX, trashY }) => {
+          this.updateTrashPosition(trashId, trashX, trashY);
+        }
+      );
+      this.room.onMessage("removeTrash", (id: string) => {
+        for (const key in this.trashEntities) {
+          const item = this.trashEntities[key];
+          if (item.uniqueId === id) {
+            delete this.trashEntities[key];
+          }
+        }
+      });
       // PADDOCKS
       this.makeWall(90, 750, 25, 100);
       this.makeWall(200, 750, 25, 100);
@@ -287,11 +316,23 @@ export default class Game extends Phaser.Scene {
     }
 
     if (this.room.state.trash.length === 0) {
+      if (this.room.state.gameInProgress === "LOBBY") return;
+      this.endTheGame(Object.keys(this.playerEntities).length);
+    }
+    this.updateActiveTrash();
+    if (!this.currentPlayer) {
+      return;
+    }
+    if (!this.room) {
+      return;
+    }
+
+    if (this.room.state.trash.length === 1) {
       this.endTheGame(Object.keys(this.playerEntities).length);
     }
 
     const animNum: number = this.currentPlayer.playerNumber || 0;
-    const velocity = 160; // Adjust this value based on desired speed
+    const velocity = 200; // Adjust this value based on desired speed
 
     // Reset velocities to 0 initially
     this.currentPlayer.setVelocity(0);
@@ -351,6 +392,43 @@ export default class Game extends Phaser.Scene {
         }
       }
     }
+
+    this.room.send("updatePlayer", this.inputPayload);
+    const spaceJustPressed = Phaser.Input.Keyboard.JustUp(
+      this.cursorKeys.space
+    );
+
+    if (spaceJustPressed && this.activeTrash) {
+      this.activeTrash.setScale(0.5);
+      this.activeTrash.pickedUp = true;
+      this.currentPlayer.holding = true;
+    }
+
+    if (this.activeTrash?.pickedUp) {
+      this.activeTrash.x = this.currentPlayer.x;
+      this.activeTrash.y = this.currentPlayer.y;
+    }
+    this.room.send("updateTrash", {
+      trashId: this.activeTrash?.data.list.id,
+      trashX: this.activeTrash?.x,
+      trashY: this.activeTrash?.y,
+    });
+
+    for (let sessionId in this.playerEntities) {
+      if (sessionId === this.room.sessionId) {
+        continue;
+      }
+
+      const entity = this.playerEntities[sessionId];
+      if (entity) {
+        const { serverX, serverY, animation } = entity.data.values;
+        entity.x = Phaser.Math.Linear(entity.x, serverX, 0.4);
+        entity.y = Phaser.Math.Linear(entity.y, serverY, 0.4);
+        if (animation) {
+          entity.play(animation, true);
+        }
+      }
+    }
   }
 
   private createCan(trashCanItem: any, key: string) {
@@ -369,11 +447,29 @@ export default class Game extends Phaser.Scene {
     const imageX = trashCanItem.x + rectWidth / 2;
     const imageY = trashCanItem.y + rectHeight / 2;
 
-    const image = this.add.image(imageX, imageY, trashCanItem.type);
-
+    const image = this.physics.add.image(imageX, imageY, trashCanItem.type);
+    Object.values(this.playerEntities).forEach((player: PlayerWithPhysics) => {
+      this.physics.add.overlap(
+        player,
+        image,
+        this.handleTrashCanCollision,
+        undefined,
+        this
+      );
+    });
     this.trashCanEntities[key] = graphics;
   }
+  private updateTrashPosition(trashId: string, newX: number, newY: number) {
+    // Find the trash object. This depends on how you're storing them.
+    const trash = Object.values(this.trashEntities).find(
+      (t: any) => t.uniqueId === trashId
+    );
 
+    if (trash) {
+      trash.x = newX;
+      trash.y = newY;
+    }
+  }
   private createTrash(trashItem: any, key: string) {
     const rectWidth = 32;
     const rectHeight = 32;
@@ -386,7 +482,6 @@ export default class Game extends Phaser.Scene {
       rectHeight
     );
     graphics.fillRectShape(rect);
-
     const imageX = trashItem.x + rectWidth / 2;
     const imageY = trashItem.y + rectHeight / 2;
 
@@ -395,11 +490,37 @@ export default class Game extends Phaser.Scene {
     image.setBounce(0, 0);
     Object.values(this.playerEntities).forEach((player: PlayerWithPhysics) => {
       this.physics.add.overlap(player, image, this.handleTrashCollision);
+
+      trashItem.onRemove(() => {
+        image.destroy();
+      });
+    });
+
+    image.setInteractive();
+    Object.values(this.playerEntities).forEach((player: PlayerWithPhysics) => {
+      this.physics.add.overlap(
+        player,
+        image,
+        this.handleTrashCollision,
+        undefined,
+        this
+      );
+    });
+    image.setData("id", trashItem.uniqueId);
+    console.log(trashItem.uniqueId, "id");
+    trashItem.onChange(() => {
+      image.x = trashItem.x;
+      image.y = trashItem.y;
     });
     this.trashEntities[trashItem.name] = image;
   }
-  private handleTrashCollision() {
-    console.log("trash collision");
+
+  private handleTrashCollision(player: any, trash: any) {
+    if (this.activeTrash) {
+      return;
+    }
+    this.activeTrash = trash;
+    player.holdingType = trash.texture.key;
   }
   private makeWall = (x: number, y: number, width: number, height: number) => {
     const wall = this.add.rectangle(x, y, width, height, 0xffffff);
@@ -410,9 +531,56 @@ export default class Game extends Phaser.Scene {
     this.wallEntities.push(wall);
   };
 
-  private setupCollision(object1: any, object2: any, callback: any) {
-    this.physics.add.collider(object1, object2, callback);
+  private handleTrashCanCollision(player: any, trashCan: any) {
+    console.log("found a bin");
+    const correctBin: {
+      [key: string]: string;
+    } = {
+      "beer-bottle": "glass",
+      "cardboard-box": "paper",
+      "ceramic-mug": "non-recyclable",
+      "detergent-bottle": "plastic",
+      "glass-bottle": "glass",
+      "glass-jar": "glass",
+      "milk-bottle": "plastic",
+      newspaper: "paper",
+      "paper-bag": "paper",
+      "polystyrene-cup": "non-recyclable",
+      "spray-paint": "non-recyclable",
+      "water-bottle": "plastic",
+    };
+    if (this.currentPlayer.holding) {
+      const bin = trashCan.texture.key;
+      const holding: string = player.holdingType;
+      console.log(correctBin[holding], bin);
+      if (correctBin[holding] === bin) {
+        console.log("Yay! Correct bin!!");
+        this.room.send("deleteTrash", this.activeTrash?.data.list.id);
+        this.activeTrash.destroy();
+        this.activeTrash = null;
+        this.currentPlayer.holding = false;
+      } else {
+        console.log(`Oh No! You put ${holding} in a ${bin} bin!`);
+      }
+    }
   }
+  private updateActiveTrash() {
+    if (!this.activeTrash) {
+      return;
+    }
+    const distance = Phaser.Math.Distance.Between(
+      this.currentPlayer.x,
+      this.currentPlayer.y,
+      this.activeTrash.x,
+      this.activeTrash.y
+    );
+
+    if (distance < 64) {
+      return;
+    }
+    this.activeTrash = null;
+  }
+
   private handleCollision(player: any, wall: any) {
     if (player.body.touching.up) {
       console.log("Collided on the top side of the player");

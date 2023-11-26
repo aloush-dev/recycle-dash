@@ -1,4 +1,12 @@
 import { Schema, type } from "@colyseus/schema";
+const LETTERS = "ABCDEFGHIJKLLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+function generateTrashId(): string {
+  let result = "";
+  for (let i = 0; i < 4; i++) {
+    result += LETTERS.charAt(Math.floor(Math.random() * LETTERS.length));
+  }
+  return result;
+}
 export abstract class Trash extends Schema {
   @type("number") x: number;
   @type("number") y: number;
@@ -7,11 +15,13 @@ export abstract class Trash extends Schema {
   @type("string") abstract name: string;
   @type("number") abstract points: number;
   @type("string") abstract imgUrl: string;
+  @type("string") uniqueId: string;
   constructor(x: number, y: number) {
     super();
     this.x = x;
     this.y = y;
     this.pickedUp = false;
+    this.uniqueId = generateTrashId();
   }
 }
 
