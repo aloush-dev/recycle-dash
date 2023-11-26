@@ -67,53 +67,8 @@ export default class Game extends Phaser.Scene {
   playerEntities: { [sessionId: string]: any } = {};
   trashCanEntities: { [key: string]: any } = {};
   trashEntities: { [key: string]: any } = {};
-  private createCan(trashCanItem: any, key: string) {
-    const rectWidth = 32;
-    const rectHeight = 32;
-
-    const graphics = this.add.graphics({ fillStyle: { alpha: 0 } });
-    const rect = new Phaser.Geom.Rectangle(
-      trashCanItem.x,
-      trashCanItem.y,
-      rectWidth,
-      rectHeight
-    );
-    graphics.fillRectShape(rect);
-
-    const imageX = trashCanItem.x + rectWidth / 2;
-    const imageY = trashCanItem.y + rectHeight / 2;
-
-    const image = this.add.image(imageX, imageY, trashCanItem.type);
-
-    this.trashCanEntities[key] = graphics;
-  }
-  private createTrash(trashItem: any, key: string) {
-    console.log(trashItem);
-
-    const rectWidth = 32;
-    const rectHeight = 32;
-
-    const graphics = this.add.graphics({ fillStyle: { alpha: 0 } });
-    const rect = new Phaser.Geom.Rectangle(
-      trashItem.x,
-      trashItem.y,
-      rectWidth,
-      rectHeight
-    );
-    graphics.fillRectShape(rect);
-
-    const imageX = trashItem.x + rectWidth / 2;
-    const imageY = trashItem.y + rectHeight / 2;
-
-    const image = this.physics.add.image(imageX, imageY, trashItem.name);
-    image.setInteractive(); // if needed
-    Object.values(this.playerEntities).forEach((player: PlayerWithPhysics) => {
-      this.physics.add.collider(player, image, this.handleTrashCollision);
-    });
-    this.trashEntities[trashItem.name] = image;
-  }
-  private handleTrashCollision() {
-    console.log("trash collision");
+  private handleClock(value: number) {
+    console.log(value);
   }
   async create() {
     const bg = this.add.sprite(0, 0, "gameBackground");
@@ -121,7 +76,7 @@ export default class Game extends Phaser.Scene {
     console.log("Joining Room");
     try {
       this.room = await this.client.joinOrCreate("my_room");
-
+      this.room.onMessage("clock", this.handleClock);
       this.room.state.trashCans.onAdd((trashCan: TrashCan, key: string) => {
         this.createCan(trashCan, key);
       });
@@ -184,7 +139,6 @@ export default class Game extends Phaser.Scene {
       console.error(e);
     }
   }
-
   update(time: number, delta: number): void {
     if (!this.currentPlayer) {
       return;
@@ -250,6 +204,57 @@ export default class Game extends Phaser.Scene {
       }
     }
   }
+
+  private createCan(trashCanItem: any, key: string) {
+    const rectWidth = 32;
+    const rectHeight = 32;
+
+    const graphics = this.add.graphics({ fillStyle: { alpha: 0 } });
+    const rect = new Phaser.Geom.Rectangle(
+      trashCanItem.x,
+      trashCanItem.y,
+      rectWidth,
+      rectHeight
+    );
+    graphics.fillRectShape(rect);
+
+    const imageX = trashCanItem.x + rectWidth / 2;
+    const imageY = trashCanItem.y + rectHeight / 2;
+
+    const image = this.add.image(imageX, imageY, trashCanItem.type);
+
+    this.trashCanEntities[key] = graphics;
+  }
+
+  private createTrash(trashItem: any, key: string) {
+    console.log(trashItem);
+
+    const rectWidth = 32;
+    const rectHeight = 32;
+
+    const graphics = this.add.graphics({ fillStyle: { alpha: 0 } });
+    const rect = new Phaser.Geom.Rectangle(
+      trashItem.x,
+      trashItem.y,
+      rectWidth,
+      rectHeight
+    );
+    graphics.fillRectShape(rect);
+
+    const imageX = trashItem.x + rectWidth / 2;
+    const imageY = trashItem.y + rectHeight / 2;
+
+    const image = this.physics.add.image(imageX, imageY, trashItem.name);
+    image.setInteractive(); // if needed
+    Object.values(this.playerEntities).forEach((player: PlayerWithPhysics) => {
+      this.physics.add.collider(player, image, this.handleTrashCollision);
+    });
+    this.trashEntities[trashItem.name] = image;
+  }
+  private handleTrashCollision() {
+    console.log("trash collision");
+  }
+
   private setupCollision(object1: any, object2: any, callback: any) {
     this.physics.add.collider(object1, object2, callback);
   }
