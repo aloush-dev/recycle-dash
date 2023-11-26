@@ -1,6 +1,5 @@
 import Phaser from "phaser";
 import { Client, Room } from "colyseus.js";
-import CountdownController from "./CountdownController";
 
 type Player = {
   x: number;
@@ -202,13 +201,6 @@ export default class Game extends Phaser.Scene {
     if (!this.room) {
       return;
     }
-
-    // this.countdown.update();
-
-    this.room.onMessage("action", (message: any) => {
-      console.log("MESSAGE FROM SERVER");
-      console.log(message);
-    });
 
     const animNum: number = this.currentPlayer.playerNumber || 0;
 
