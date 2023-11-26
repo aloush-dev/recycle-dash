@@ -17,15 +17,19 @@ export default class Welcome extends Phaser.Scene {
     );
   }
 
-  hostGameButton() {
-    this.scene.switch("game");
+  easyGameButton = () => {
+    this.scene.start("game", { difficulty: "EASY" });
+  };
+
+  mediumGameButton() {
+    this.scene.start("game", { difficulty: "MEDIUM" });
   }
 
-  joinGameButton() {
-    this.scene.switch("game");
+  hardGameButton() {
+    this.scene.start("game", { difficulty: "HARD" });
   }
 
-  client = new Client("ws://localhost:2567");
+  // client = new Client("ws://localhost:2567");
 
   async create() {
     const bg = this.add.sprite(0, 0, "welcomeBackground");
@@ -41,8 +45,28 @@ export default class Welcome extends Phaser.Scene {
         align: "center",
       })
       .setOrigin(0.5);
-    const PlayButton = this.add
-      .text(1000 * 0.5, 400, "Play Game", {
+    const EasyButton = this.add
+      .text(1000 * 0.5, 400, "Play Easy Game", {
+        fontFamily: "MarioKart",
+        backgroundColor: "#e3d081",
+        color: "#b33951",
+        fontSize: "30px",
+        padding: { x: 20, y: 20 },
+      })
+      .setOrigin(0.5);
+
+    const MediumButton = this.add
+      .text(1000 * 0.5, 500, "Play Medium Game", {
+        fontFamily: "MarioKart",
+        backgroundColor: "#e3d081",
+        color: "#b33951",
+        fontSize: "30px",
+        padding: { x: 20, y: 20 },
+      })
+      .setOrigin(0.5);
+
+    const hardButton = this.add
+      .text(1000 * 0.5, 600, "Play Hard Game", {
         fontFamily: "MarioKart",
         backgroundColor: "#e3d081",
         color: "#b33951",
@@ -60,8 +84,14 @@ export default class Welcome extends Phaser.Scene {
       repeat: -1,
     });
 
-    PlayButton.setInteractive({ useHandCursor: true });
-    PlayButton.on("pointerdown", () => this.hostGameButton());
+    EasyButton.setInteractive({ useHandCursor: true });
+    EasyButton.on("pointerdown", () => this.easyGameButton());
+
+    MediumButton.setInteractive({ useHandCursor: true });
+    MediumButton.on("pointerdown", () => this.mediumGameButton());
+
+    hardButton.setInteractive({ useHandCursor: true });
+    hardButton.on("pointerdown", () => this.hardGameButton());
 
     // const backgroundMuisc = this.sound.add("backgroundMusic", { loop: true });
     // backgroundMuisc.play();
