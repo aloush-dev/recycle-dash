@@ -11,9 +11,9 @@ export const NON_RECYCLABLE_IMG_URL =
 export const INITIAL_TRASH = 10;
 
 export const TRASH_FOR_DIFFICULTY = {
-  EASY: 2,
-  MEDIUM: 40,
-  HARD: 60,
+  EASY: 10,
+  MEDIUM: 25,
+  HARD: 40,
 };
 const STARTING_RANK = 750;
 export const PLAYER_SPAWN_LOCATIONS = {
