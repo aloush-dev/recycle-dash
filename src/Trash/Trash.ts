@@ -11,10 +11,10 @@ export abstract class Trash extends Schema {
   @type("number") x: number;
   @type("number") y: number;
   @type("boolean") pickedUp: boolean;
-  @type("string") abstract type: string;
-  @type("string") abstract name: string;
-  @type("number") abstract points: number;
-  @type("string") abstract imgUrl: string;
+  abstract type: string;
+  abstract name: string;
+  abstract points: number;
+  abstract imgUrl: string;
   @type("string") uniqueId: string;
   constructor(x: number, y: number) {
     super();
