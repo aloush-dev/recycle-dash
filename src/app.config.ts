@@ -25,7 +25,6 @@ export default config({
     app.get("/hello_world", (req, res) => {
       res.send("It's time to kick ass and chew bubblegum!");
     });
-
     /**
      * Use @colyseus/playground
      * (It is not recommended to expose this route in a production environment)
