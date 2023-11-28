@@ -82,7 +82,7 @@ export default class Game extends Phaser.Scene {
       this.difficulty = difficulty;
     }
   }
-  client = new Client(process.env.SERVER_URL);
+  client = new Client(process.env.SERVER_URL || "ws://localhost:2567");
 
   playerEntities: { [sessionId: string]: any } = {};
   trashCanEntities: { [key: string]: any } = {};
