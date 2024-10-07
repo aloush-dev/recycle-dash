@@ -20,7 +20,7 @@ export default class EndGame extends Phaser.Scene {
     }
   }
 
-  client = new Client("ws://localhost:2567");
+  client = new Client(process.env.SERVER_URL || "ws://localhost:2567");
 
   formatTime(seconds: number): string {
     const minutes = Math.floor(seconds / 60);

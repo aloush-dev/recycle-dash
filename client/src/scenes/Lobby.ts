@@ -20,7 +20,7 @@ export default class Lobby extends Phaser.Scene {
     );
   }
 
-  client = new Client("ws://localhost:2567");
+  client = new Client(process.env.SERVER_URL || "ws://localhost:2567");
   room!: Room;
 
   currentPlayer!: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
